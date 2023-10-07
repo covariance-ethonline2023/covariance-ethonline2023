@@ -1,0 +1,43 @@
+@startuml
+skinparam title {
+    FontSize 30
+}
+
+skinparam lifelineStrategy solid
+skinparam noteFontColor automatic
+skinparam SequenceMessageAlign direction
+
+!$company = "#plum"
+!$contributor = "#lavender"
+!$safe = "#lightblue"
+!$uma = "#indianred"
+!$covariance = "#goldenrod"
+
+participant "Company" as company $company
+participant "Safe Protocol" as safeprotocol $safe
+participant "Contributor" as contributor $contributor
+participant "Covariance Hub" as covariance $covariance
+participant "UMA Claim Contract" as umaclaim $covariance
+participant "Covariance Safe Plugin" as safeplugin $covariance
+participant "UMA Protocol" as umaprotocol $uma
+participant "Company Safe Account" as safeaccount $safe
+
+company -> safeprotocol: Create Safe account with Plugins app
+safeprotocol -> safeaccount: Create
+company -> covariance: Set up a new campaign
+... Waiting for contributors to apply ...
+contributor -> covariance: Apply to campaign
+... Waiting for company to approve ...
+company -> covariance: Approve contributor
+covariance -> umaclaim: Deploy new UMA Claim (using create2)
+... Contributor does the job and reports to the company ...
+company -> covariance: Approve contribution
+covariance -> umaprotocol: Assert claim as true
+... If no one disputes the claim ...
+contributor -> umaprotocol: Request settlement
+umaprotocol -> safeplugin: Approve transfer
+safeplugin -> covariance: Validate claim
+covariance -> safeplugin: Confirm
+safeplugin -> safeaccount: Transfer reward to contributor
+
+@enduml
