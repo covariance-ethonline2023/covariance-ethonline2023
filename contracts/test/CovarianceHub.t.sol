@@ -6,8 +6,10 @@ import { SafeProxyFactory } from 'safe-contracts/proxies/SafeProxyFactory.sol';
 import { Test, console2 } from 'forge-std/Test.sol';
 import { Vm } from 'forge-std/Vm.sol';
 import '../src/CovarianceHub.sol';
+import '../src/external/IERC20.sol';
 
 contract CovarianceHubTest is Test {
+    IERC20 private constant WETH = IERC20(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
     SafeProxyFactory safeFactory = SafeProxyFactory(0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67);
     Safe safeSingleton = Safe(payable(0x29fcB43b46531BcA003ddC8FCB67FFE91900C762));
     CovarianceHub public testContract;
@@ -57,10 +59,10 @@ contract CovarianceHubTest is Test {
             saltNonce: 0
         }))));
 
-        deployCodeTo('Safe.sol', address(safeAccount));
+        // deployCodeTo('Safe.sol', address(safeAccount));
     }
 
-    function execSafeTx (TxDetails memory details) private {
+    function getDataHash (TxDetails memory details) private returns (bytes32) {
         bytes32 txHash = safeAccount.getTransactionHash({
             to: details.to,
             value: details.value,
@@ -74,17 +76,21 @@ contract CovarianceHubTest is Test {
             _nonce: safeAccount.nonce()
         });
 
-        bytes32 dataHash = keccak256(abi.encodePacked(
+        return keccak256(abi.encodePacked(
             "\x19Ethereum Signed Message:\n32",
             txHash
         ));
+    }
+
+    function execSafeTx (TxDetails memory details) private returns (bool) {
+        bytes32 dataHash = getDataHash(details);
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(
             details.account,
             dataHash
         );
 
-        safeAccount.execTransaction({
+        try safeAccount.execTransaction({
             to: details.to,
             value: details.value,
             data: details.data,
@@ -95,22 +101,34 @@ contract CovarianceHubTest is Test {
             gasToken: details.gasToken,
             refundReceiver: details.refundReceiver,
             signatures: abi.encodePacked(r, s, v + 4)
-        });
+        }) returns (bool success) {
+            return success;
+        }
+        catch {
+            return false;
+        }
     }
 
-    function createCampaignViaSafe () public {
+    function createCampaignViaSafe () public returns (bool) {
+        return createCampaignViaSafe(IERC20(address(0)), 0);
+    }
+
+    function createCampaignViaSafe (
+        IERC20 rewardToken,
+        uint rewardAmount
+    ) public returns (bool) {
         bytes memory data = abi.encodeWithSelector(
             CovarianceHub.createCampaign.selector,
             CovarianceHub.Campaign({
                 initiator: safeAccount,
                 title: 'Test Campaign',
                 ipfsCid: '',
-                rewardToken: address(0),
-                rewardAmount: 0
+                rewardToken: rewardToken,
+                rewardAmount: rewardAmount
             })
         );
 
-        execSafeTx(TxDetails({
+        return execSafeTx(TxDetails({
             account: company,
             to: address(testContract),
             value: 0,
@@ -122,6 +140,17 @@ contract CovarianceHubTest is Test {
             gasToken: address(0),
             refundReceiver: payable(0)
         }));
+    }
+
+    function test_campaignWithRewardHasBalance_txSucceeds() public {
+        deal(address(WETH), address(safeAccount), 1 ether);
+        bool success = createCampaignViaSafe(WETH, 1 ether);
+        assertTrue(success);
+    }
+
+    function test_campaignWithRewardNoBalance_txShouldFail() public {
+        bool success = createCampaignViaSafe(WETH, 1 ether);
+        assertFalse(success);
     }
 
     function test_createCampaignTwice_getAccountCampaigns() public {
@@ -150,7 +179,7 @@ contract CovarianceHubTest is Test {
             initiator: safeAccount,
             title: 'Test Campaign',
             ipfsCid: '',
-            rewardToken: address(0),
+            rewardToken: IERC20(address(0)),
             rewardAmount: 0
         }));
     }

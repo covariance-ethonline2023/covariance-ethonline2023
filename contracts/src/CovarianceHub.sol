@@ -1,7 +1,10 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import { Safe } from 'safe-contracts/Safe.sol';
+import './external/IERC20.sol';
+
+import { console2 } from 'forge-std/Test.sol';
 
 error NotEnoughFundsInSafe();
 error InitiatorNotSafeAccount();
@@ -16,7 +19,7 @@ contract CovarianceHub {
         Safe initiator;
         string title;
         string ipfsCid;
-        address rewardToken;
+        IERC20 rewardToken;
         uint rewardAmount;
     }
 
@@ -28,6 +31,12 @@ contract CovarianceHub {
 
     function createCampaign (Campaign memory campaign) external returns (uint id) {
         if (msg.sender != address(campaign.initiator)) revert SenderIsNotInitiator();
+        if (address(campaign.rewardToken) != address(0)) {
+            uint initiatorBalance = campaign.rewardToken
+                .balanceOf(address(campaign.initiator));
+            if (initiatorBalance < campaign.rewardAmount)
+                revert NotEnoughFundsInSafe();
+        }
         id = campaignId;
         _campaignsByAccount[campaign.initiator].push(id);
         // campaigns[id] = campaign;
