@@ -13,11 +13,10 @@ TBD
 
 ## 📦 Setup
 
-TBD
-
 ### Contracts
 
-TBD
+#### Config
+Add a `contracts/.env` file and set the `GOERLI_RPC` to your RPC url.
 
 ### Frontend
 
