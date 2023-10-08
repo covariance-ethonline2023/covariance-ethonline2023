@@ -15,8 +15,8 @@ contract CovarianceHubTest is Test {
     CovarianceHub public testContract;
     Safe public safeAccount;
 
-    Vm.Wallet company;
-    Vm.Wallet contributor;
+    Vm.Wallet company = vm.createWallet('company');
+    Vm.Wallet contributor = vm.createWallet('contributor');
 
     struct TxDetails {
         Vm.Wallet account;
@@ -34,9 +34,6 @@ contract CovarianceHubTest is Test {
     function setUp() public {
         vm.createSelectFork('goerli');
         testContract = new CovarianceHub();
-
-        company = vm.createWallet('company');
-        contributor = vm.createWallet('contributor');
 
         address[] memory owners = new address[](1);
         owners[0] = company.addr;
@@ -117,14 +114,23 @@ contract CovarianceHubTest is Test {
         IERC20 rewardToken,
         uint rewardAmount
     ) public returns (bool) {
+        Challenge[] memory challenges = new Challenge[](1);
+        challenges[0] = Challenge({
+            kpi: 'Bring customers',
+            points: 10,
+            maxContributions: 3,
+            contributionsSpent: 0
+        });
+
         bytes memory data = abi.encodeWithSelector(
             CovarianceHub.createCampaign.selector,
-            CovarianceHub.Campaign({
+            Campaign({
                 initiator: safeAccount,
                 title: 'Test Campaign',
                 ipfsCid: '',
                 rewardToken: rewardToken,
-                rewardAmount: rewardAmount
+                rewardAmount: rewardAmount,
+                challenges: challenges
             })
         );
 
@@ -140,6 +146,57 @@ contract CovarianceHubTest is Test {
             gasToken: address(0),
             refundReceiver: payable(0)
         }));
+    }
+
+    function test_contributeZeroAmount_shouldRevert() public {
+        createCampaignViaSafe();
+        vm.prank(contributor.addr);
+        Contribution[] memory contributions = new Contribution[](1);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 0,
+            amount: 0
+        });
+        vm.expectRevert(InvalidContribution.selector);
+        testContract.contribute(contributions);
+    }
+
+    function test_contribute() public {
+        createCampaignViaSafe();
+        vm.prank(contributor.addr);
+        Contribution[] memory contributions = new Contribution[](1);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 0,
+            amount: 1
+        });
+        testContract.contribute(contributions);
+    }
+
+    function test_contributeNonExistingCampaign_shouldRevert() public {
+        createCampaignViaSafe();
+        vm.prank(contributor.addr);
+        Contribution[] memory contributions = new Contribution[](1);
+        contributions[0] = Contribution({
+            campaignId: 123,
+            challengeIndex: 0,
+            amount: 1
+        });
+        vm.expectRevert(InvalidContribution.selector);
+        testContract.contribute(contributions);
+    }
+
+    function test_contributeNonExistingChallenge_shouldRevert() public {
+        createCampaignViaSafe();
+        vm.prank(contributor.addr);
+        Contribution[] memory contributions = new Contribution[](1);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 123,
+            amount: 1
+        });
+        vm.expectRevert(InvalidContribution.selector);
+        testContract.contribute(contributions);
     }
 
     function test_campaignWithRewardHasBalance_txSucceeds() public {
@@ -175,12 +232,13 @@ contract CovarianceHubTest is Test {
     function test_createCampaignNotAsSender_shouldRevert() public {
         vm.startPrank(company.addr);
         vm.expectRevert(SenderIsNotInitiator.selector);
-        testContract.createCampaign(CovarianceHub.Campaign({
+        testContract.createCampaign(Campaign({
             initiator: safeAccount,
             title: 'Test Campaign',
             ipfsCid: '',
             rewardToken: IERC20(address(0)),
-            rewardAmount: 0
+            rewardAmount: 0,
+            challenges: new Challenge[](1)
         }));
     }
 }
