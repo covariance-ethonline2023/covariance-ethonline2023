@@ -114,11 +114,17 @@ contract CovarianceHubTest is Test {
         IERC20 rewardToken,
         uint rewardAmount
     ) public returns (bool) {
-        Challenge[] memory challenges = new Challenge[](1);
+        Challenge[] memory challenges = new Challenge[](2);
         challenges[0] = Challenge({
             kpi: 'Bring customers',
             points: 10,
             maxContributions: 3,
+            contributionsSpent: 0
+        });
+        challenges[1] = Challenge({
+            kpi: 'Increase hackathon participation',
+            points: 20,
+            maxContributions: 5,
             contributionsSpent: 0
         });
 
@@ -148,6 +154,57 @@ contract CovarianceHubTest is Test {
         }));
     }
 
+    function test_campaignContributions() public {
+        createCampaignViaSafe();
+        vm.prank(contributor.addr);
+        Contribution[] memory contributions = new Contribution[](2);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 0,
+            amount: 1
+        });
+        contributions[1] = Contribution({
+            campaignId: 1,
+            challengeIndex: 1,
+            amount: 2
+        });
+        testContract.contribute(contributions);
+
+        Contribution[] memory contribs = testContract.campaignContributions(1);
+        assertEq(contribs[0].campaignId, 1);
+        assertEq(contribs[0].challengeIndex, 0);
+        assertEq(contribs[0].amount, 1);
+        assertEq(contribs[1].campaignId, 1);
+        assertEq(contribs[1].challengeIndex, 1);
+        assertEq(contribs[1].amount, 2);
+    }
+
+    function test_contribute_shouldStoreContributions() public {
+        createCampaignViaSafe();
+        vm.prank(contributor.addr);
+        Contribution[] memory contributions = new Contribution[](2);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 0,
+            amount: 1
+        });
+        contributions[1] = Contribution({
+            campaignId: 1,
+            challengeIndex: 1,
+            amount: 2
+        });
+        testContract.contribute(contributions);
+
+        Contribution memory contrib1 = testContract.contribution(1);
+        Contribution memory contrib2 = testContract.contribution(2);
+        assertEq(contrib1.campaignId, 1);
+        assertEq(contrib1.challengeIndex, 0);
+        assertEq(contrib1.amount, 1);
+        assertEq(contrib2.campaignId, 1);
+        assertEq(contrib2.challengeIndex, 1);
+        assertEq(contrib2.amount, 2);
+    }
+
     function test_contributeZeroAmount_shouldRevert() public {
         createCampaignViaSafe();
         vm.prank(contributor.addr);
@@ -157,7 +214,10 @@ contract CovarianceHubTest is Test {
             challengeIndex: 0,
             amount: 0
         });
-        vm.expectRevert(InvalidContribution.selector);
+        vm.expectRevert(abi.encodeWithSelector(
+            InvalidContribution.selector,
+            'amount'
+        ));
         testContract.contribute(contributions);
     }
 
@@ -182,7 +242,10 @@ contract CovarianceHubTest is Test {
             challengeIndex: 0,
             amount: 1
         });
-        vm.expectRevert(InvalidContribution.selector);
+        vm.expectRevert(abi.encodeWithSelector(
+            InvalidContribution.selector,
+            'campaignId'
+        ));
         testContract.contribute(contributions);
     }
 
@@ -195,7 +258,10 @@ contract CovarianceHubTest is Test {
             challengeIndex: 123,
             amount: 1
         });
-        vm.expectRevert(InvalidContribution.selector);
+        vm.expectRevert(abi.encodeWithSelector(
+            InvalidContribution.selector,
+            'challengeIndex'
+        ));
         testContract.contribute(contributions);
     }
 
