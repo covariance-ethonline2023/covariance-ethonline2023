@@ -15,6 +15,10 @@ TBD
 
 ### Contracts
 
+#### Architecture
+
+<img src="./contracts/architecture.png" alt="Smart contracts architecture diagram" height=500 />
+
 #### Config
 Add a `contracts/.env` file and set the `GOERLI_RPC` to your RPC url.
 
