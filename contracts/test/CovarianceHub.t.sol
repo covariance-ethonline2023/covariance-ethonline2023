@@ -4,19 +4,29 @@ pragma solidity ^0.8.13;
 import { Safe, Enum } from 'safe-contracts/Safe.sol';
 import { SafeProxyFactory } from 'safe-contracts/proxies/SafeProxyFactory.sol';
 import {
+    SafeProtocolRegistry
+} from 'safe-core-protocol/SafeProtocolRegistry.sol';
+import {
+    SafeProtocolManager
+} from 'safe-core-protocol/SafeProtocolManager.sol';
+import {
     OptimisticOracleV3Interface
-} from 'uma/optimistic-oracle-v3/interfaces/OptimisticOracleV3Interface.sol';
+} from '../src/external/OptimisticOracleV3Interface.sol';
+import '@openzeppelin/contracts/interfaces/IERC20.sol';
 import { Test, console2 } from 'forge-std/Test.sol';
 import { Vm } from 'forge-std/Vm.sol';
 import '../src/CovarianceHub.sol';
-import '@openzeppelin/contracts/interfaces/IERC20.sol';
+import '../src/CovarianceSafePlugin.sol';
 
 contract CovarianceHubTest is Test {
     IERC20 private constant WETH = IERC20(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
     SafeProxyFactory safeFactory = SafeProxyFactory(0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67);
     Safe safeSingleton = Safe(payable(0x29fcB43b46531BcA003ddC8FCB67FFE91900C762));
     OptimisticOracleV3Interface constant oov3 = OptimisticOracleV3Interface(0x9923D42eF695B5dd9911D05Ac944d4cAca3c4EAB);
+    SafeProtocolRegistry constant pluginRegistry = SafeProtocolRegistry(0x2b18E7246d213676a0b9741fE860c7cC05D75cE2);
+    SafeProtocolManager constant pluginManager = SafeProtocolManager(0x6a97233258CD825F45b73f4B14e2cE22D4627cAf);
     CovarianceHub public testContract;
+    CovarianceSafePlugin safePlugin;
     Safe public safeAccount;
 
     Vm.Wallet company = vm.createWallet('company');
@@ -37,7 +47,9 @@ contract CovarianceHubTest is Test {
 
     function setUp() public {
         vm.createSelectFork('goerli');
-        testContract = new CovarianceHub();
+        safePlugin = new CovarianceSafePlugin();
+        pluginRegistry.addModule(address(safePlugin), 1);
+        testContract = new CovarianceHub(safePlugin);
 
         address[] memory owners = new address[](1);
         owners[0] = company.addr;
@@ -60,10 +72,27 @@ contract CovarianceHubTest is Test {
             saltNonce: 0
         }))));
 
+        execSafeTx(TxDetails({
+            account: company,
+            to: address(pluginManager),
+            value: 0,
+            data: abi.encodeWithSelector(
+                SafeProtocolManager.enablePlugin.selector,
+                address(safePlugin),
+                1
+            ),
+            operation: Enum.Operation.Call,
+            safeTxGas: 0,
+            baseGas: 0,
+            gasPrice: 0,
+            gasToken: address(0),
+            refundReceiver: payable(0)
+        }));
+
         // deployCodeTo('Safe.sol', address(safeAccount));
     }
 
-    function getDataHash (TxDetails memory details) private returns (bytes32) {
+    function getDataHash (TxDetails memory details) private view returns (bytes32) {
         bytes32 txHash = safeAccount.getTransactionHash({
             to: details.to,
             value: details.value,
