@@ -1,17 +1,19 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
 
 import { Safe, Enum } from 'safe-contracts/Safe.sol';
 import { SafeProxyFactory } from 'safe-contracts/proxies/SafeProxyFactory.sol';
+import {
+    OptimisticOracleV3Interface
+} from 'uma/optimistic-oracle-v3/interfaces/OptimisticOracleV3Interface.sol';
 import { Test, console2 } from 'forge-std/Test.sol';
 import { Vm } from 'forge-std/Vm.sol';
 import '../src/CovarianceHub.sol';
-import '../src/external/IERC20.sol';
+import '@openzeppelin/contracts/interfaces/IERC20.sol';
 
 contract CovarianceHubTest is Test {
     IERC20 private constant WETH = IERC20(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
     SafeProxyFactory safeFactory = SafeProxyFactory(0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67);
     Safe safeSingleton = Safe(payable(0x29fcB43b46531BcA003ddC8FCB67FFE91900C762));
+    OptimisticOracleV3Interface constant oov3 = OptimisticOracleV3Interface(0x9923D42eF695B5dd9911D05Ac944d4cAca3c4EAB);
     CovarianceHub public testContract;
     Safe public safeAccount;
 
@@ -152,6 +154,47 @@ contract CovarianceHubTest is Test {
             gasToken: address(0),
             refundReceiver: payable(0)
         }));
+    }
+
+    function test_approveContribution_invokeOOV3() public {
+        createCampaignViaSafe();
+
+        Contribution[] memory contributions = new Contribution[](1);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 0,
+            amount: 1
+        });
+
+        vm.prank(contributor.addr);
+        testContract.contribute(contributions);
+
+        vm.startPrank(company.addr);
+
+        bytes32 assertionId = testContract.approve(1);
+        address recipient = oov3.getAssertion(assertionId).callbackRecipient;
+
+        assertEq(recipient, address(testContract));
+    }
+
+    function test_approveContributionAsContributor_shouldRevert() public {
+        createCampaignViaSafe();
+
+        Contribution[] memory contributions = new Contribution[](1);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 0,
+            amount: 1
+        });
+
+        vm.prank(contributor.addr);
+        testContract.contribute(contributions);
+
+        uint[] memory contribIds = testContract.getAccountContributions(contributor.addr);
+
+        vm.expectRevert(NotAllowed.selector);
+        vm.prank(contributor.addr);
+        testContract.approve(contribIds[0]);
     }
 
     function test_campaignContributions() public {
