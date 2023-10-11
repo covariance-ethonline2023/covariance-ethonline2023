@@ -5,6 +5,9 @@ import { Safe } from 'safe-contracts/Safe.sol';
 import {
     OptimisticOracleV3Interface
 } from 'uma/optimistic-oracle-v3/interfaces/OptimisticOracleV3Interface.sol';
+import {
+    OptimisticOracleV3CallbackRecipientInterface
+} from 'uma/optimistic-oracle-v3/interfaces/OptimisticOracleV3CallbackRecipientInterface.sol';
 import '@openzeppelin/contracts/interfaces/IERC20.sol';
 
 import { console2 } from 'forge-std/Test.sol';
@@ -13,6 +16,7 @@ error NotEnoughFundsInSafe();
 error InitiatorNotSafeAccount();
 error SenderIsNotInitiator();
 error InvalidContribution(string field);
+error InvalidStateTransition();
 error NotAllowed();
 
 struct Contribution {
@@ -43,6 +47,14 @@ struct Claim {
     Contribution contribution;
 }
 
+enum Status {
+    NONE,
+    SUBMITTED,
+    ASSERTING,
+    APPROVED,
+    DISPUTED
+}
+
 contract CovarianceHub {
     uint campaignId = 1;
     uint contributionId = 1;
@@ -53,6 +65,9 @@ contract CovarianceHub {
     mapping(uint => Contribution) private _contributionById;
     mapping(uint => address) private _contributer;
     mapping(uint => Campaign) public campaignById;
+    mapping(uint => Status) public contributionStatus;
+    mapping(bytes32 => uint) public contributionByAssertion;
+    mapping(uint => bytes32) public assertionByContribution;
 
     OptimisticOracleV3Interface constant oov3 = OptimisticOracleV3Interface(0x9923D42eF695B5dd9911D05Ac944d4cAca3c4EAB);
     IERC20 private constant WETH = IERC20(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
@@ -109,6 +124,7 @@ contract CovarianceHub {
 
             if (contrib.amount == 0) revert InvalidContribution('amount');
 
+            contributionStatus[contributionId] = Status.SUBMITTED;
             _contributionsByAccount[msg.sender].push(contributionId);
             _contributionsByCampaign[contrib.campaignId].push(contributionId);
             // contributer[contributionId] = msg.sender;
@@ -127,6 +143,9 @@ contract CovarianceHub {
     function approve (
         uint contribId
     ) external returns (bytes32 assertionId) {
+        if (contributionStatus[contribId] != Status.SUBMITTED) {
+            revert InvalidStateTransition();
+        }
         uint campId = _campaignByContribution[contribId];
         Safe initiator = campaignById[campId].initiator;
         address[] memory owners = initiator.getOwners();
@@ -139,6 +158,8 @@ contract CovarianceHub {
         }
 
         if (isAllowed == false) revert NotAllowed();
+
+        contributionStatus[contribId] = Status.ASSERTING;
 
         assertionId = oov3.assertTruth({
             claim: abi.encode(Claim({
@@ -155,6 +176,9 @@ contract CovarianceHub {
             identifier: oov3.defaultIdentifier(),
             domainId: ''
         });
+
+        assertionByContribution[contribId] = assertionId;
+        contributionByAssertion[assertionId] = contribId;
     }
 
     function storeCampaign (uint id, Campaign memory campaign) private {
@@ -166,5 +190,20 @@ contract CovarianceHub {
         for (uint i = 0; i < campaign.challenges.length; i++) {
             campaignById[id].challenges.push(campaign.challenges[i]);
         }
+    }
+
+    function assertionResolvedCallback(
+        bytes32 assertionId,
+        bool assertedTruthfully
+    ) external {
+        if (msg.sender != address(oov3)) revert NotAllowed();
+        uint contribId = contributionByAssertion[assertionId];
+        contributionStatus[contribId] = Status.APPROVED;
+    }
+
+    function assertionDisputedCallback(bytes32 assertionId) external {
+        if (msg.sender != address(oov3)) revert NotAllowed();
+        uint contribId = contributionByAssertion[assertionId];
+        contributionStatus[contribId] = Status.DISPUTED;
     }
 }

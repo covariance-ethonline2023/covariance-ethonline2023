@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
 
 import { Safe, Enum } from 'safe-contracts/Safe.sol';
 import { SafeProxyFactory } from 'safe-contracts/proxies/SafeProxyFactory.sol';
@@ -154,6 +156,70 @@ contract CovarianceHubTest is Test {
             gasToken: address(0),
             refundReceiver: payable(0)
         }));
+    }
+
+    function test_invokeOovDisputedCallbackDirectly_shouldRevert () public {
+        vm.expectRevert(NotAllowed.selector);
+        testContract.assertionDisputedCallback('test');
+    }
+
+    function test_invokeOovResolvedCallbackDirectly_shouldRevert () public {
+        vm.expectRevert(NotAllowed.selector);
+        testContract.assertionResolvedCallback('test', false);
+    }
+
+    function test_settleContribution_invokeOOV3() public {
+        createCampaignViaSafe();
+
+        Contribution[] memory contributions = new Contribution[](1);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 0,
+            amount: 1
+        });
+
+        vm.prank(contributor.addr);
+        testContract.contribute(contributions);
+
+        vm.startPrank(company.addr);
+
+        testContract.approve(1);
+
+        vm.warp(block.timestamp + 120);
+
+        bytes32 assertion = testContract.assertionByContribution(1);
+
+        vm.stopPrank();
+        vm.prank(contributor.addr);
+        bool isApproved = oov3.settleAndGetAssertionResult(assertion);
+
+        assertEq(isApproved, true);
+
+        assertEq(
+            uint8(testContract.contributionStatus(1)),
+            uint8(Status.APPROVED)
+        );
+    }
+
+    function test_approveTwice_shouldRevert() public {
+        createCampaignViaSafe();
+
+        Contribution[] memory contributions = new Contribution[](1);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 0,
+            amount: 1
+        });
+
+        vm.prank(contributor.addr);
+        testContract.contribute(contributions);
+
+        vm.startPrank(company.addr);
+
+        testContract.approve(1);
+
+        vm.expectRevert(InvalidStateTransition.selector);
+        testContract.approve(1);
     }
 
     function test_approveContribution_invokeOOV3() public {
