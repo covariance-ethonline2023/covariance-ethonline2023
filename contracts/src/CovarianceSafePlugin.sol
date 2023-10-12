@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import { Safe } from 'safe-contracts/Safe.sol';
 import { ISafeProtocolPlugin } from 'safe-core-protocol/interfaces/Modules.sol';
+import {
+    SafeProtocolManager,
+    SafeProtocolAction,
+    SafeTransaction
+} from 'safe-core-protocol/SafeProtocolManager.sol';
+import '@openzeppelin/contracts/interfaces/IERC20.sol';
 
 struct PluginMetadata {
     string name;
@@ -14,17 +21,7 @@ struct PluginMetadata {
 contract CovarianceSafePlugin is ISafeProtocolPlugin {
     using PluginMetadataOps for PluginMetadata;
 
-    struct SafeProtocolAction {
-        address payable to;
-        uint256 value;
-        bytes data;
-    }
-
-    struct SafeTransaction {
-        SafeProtocolAction[] actions;
-        uint256 nonce;
-        bytes32 metadataHash;
-    }
+    SafeProtocolManager constant pluginManager = SafeProtocolManager(0x6a97233258CD825F45b73f4B14e2cE22D4627cAf);
 
     PluginMetadata public pluginMetadata;
     bytes public encodedMetadata;
@@ -33,7 +30,7 @@ contract CovarianceSafePlugin is ISafeProtocolPlugin {
     constructor () {
         pluginMetadata = PluginMetadata({
             name: unicode'♓ Covariance',
-            version: '1.0.0-rc',
+            version: '1.0.0-rc1',
             requiresRootAccess: false,
             iconUrl: 'https://softr-prod.imgix.net/applications/125c1d0e-866a-42bf-b831-89853e605024/assets/0dcef2ca-432b-44fe-8d94-f4a5a23ae5b2.png',
             appUrl: 'https://example.com'
@@ -76,6 +73,34 @@ contract CovarianceSafePlugin is ISafeProtocolPlugin {
         if (interfaceId == 0x01ffc9a7) return true;
         if (interfaceId == type(ISafeProtocolPlugin).interfaceId) return true;
         return false;
+    }
+
+    function payout (
+        Safe from,
+        address to,
+        IERC20 rewardToken,
+        uint amount
+    ) external {
+        SafeProtocolAction[] memory actions = new SafeProtocolAction[](1);
+
+        actions[0] = SafeProtocolAction({
+            to: payable(address(rewardToken)),
+            value: 0,
+            data: abi.encodeWithSelector(
+                IERC20.transfer.selector,
+                address(to),
+                amount
+            )
+        });
+
+        pluginManager.executeTransaction({
+            account: address(from),
+            transaction: SafeTransaction({
+                actions: actions,
+                nonce: from.nonce(),
+                metadataHash: metadataHash
+            })
+        });
     }
 }
 

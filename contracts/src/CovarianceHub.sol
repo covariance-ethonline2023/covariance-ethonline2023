@@ -61,6 +61,7 @@ contract CovarianceHub {
     uint contributionId = 1;
     mapping(Safe => uint[]) private _campaignsByAccount;
     mapping(address => uint[]) private _contributionsByAccount;
+    mapping(uint => address) private _accountByContribution;
     mapping(uint => uint[]) private _contributionsByCampaign;
     mapping(uint => uint) private _campaignByContribution;
     mapping(uint => Contribution) private _contributionById;
@@ -132,6 +133,7 @@ contract CovarianceHub {
 
             contributionStatus[contributionId] = Status.SUBMITTED;
             _contributionsByAccount[msg.sender].push(contributionId);
+            _accountByContribution[contributionId] = msg.sender;
             _contributionsByCampaign[contrib.campaignId].push(contributionId);
             // contributer[contributionId] = msg.sender;
             _contributionById[contributionId] = contrib;
@@ -176,7 +178,7 @@ contract CovarianceHub {
             asserter: msg.sender,
             callbackRecipient: address(this),
             escalationManager: address(0),
-            liveness: 60,
+            liveness: 30,
             currency: WETH,
             bond: 0,
             identifier: oov3.defaultIdentifier(),
@@ -205,6 +207,28 @@ contract CovarianceHub {
         if (msg.sender != address(oov3)) revert NotAllowed();
         uint contribId = contributionByAssertion[assertionId];
         contributionStatus[contribId] = Status.APPROVED;
+        Campaign memory campaign = campaignById[_campaignByContribution[contribId]];
+        Contribution memory contrib = contribution(contribId);
+        uint totalPoints;
+        for (uint i = 0; i < campaign.challenges.length; i++) {
+            Challenge memory challenge = campaign.challenges[i];
+            totalPoints += challenge.points * challenge.maxContributions;
+        }
+        uint rewardPerPoint = campaign.rewardAmount / totalPoints;
+        Challenge memory contribChallenge = campaign.challenges[contrib.challengeIndex];
+        uint availableContribSpots = contribChallenge.maxContributions - contribChallenge.contributionsSpent;
+        uint effectiveContribAmount = availableContribSpots > contrib.amount ?
+            contrib.amount : availableContribSpots;
+        uint rewardAmount = effectiveContribAmount *
+            contribChallenge.points *
+            rewardPerPoint;
+
+        plugin.payout({
+            from: campaign.initiator,
+            to: _accountByContribution[contribId],
+            rewardToken: campaign.rewardToken,
+            amount: rewardAmount
+        });
     }
 
     function assertionDisputedCallback(bytes32 assertionId) external {

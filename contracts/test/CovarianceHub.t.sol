@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import { Safe, Enum } from 'safe-contracts/Safe.sol';
+import { ModuleManager } from 'safe-contracts/base/ModuleManager.sol';
 import { SafeProxyFactory } from 'safe-contracts/proxies/SafeProxyFactory.sol';
 import {
     SafeProtocolRegistry
@@ -33,7 +34,7 @@ contract CovarianceHubTest is Test {
     Vm.Wallet contributor = vm.createWallet('contributor');
 
     struct TxDetails {
-        Vm.Wallet account;
+        Vm.Wallet signer;
         address to;
         uint256 value;
         bytes data;
@@ -71,15 +72,15 @@ contract CovarianceHubTest is Test {
             initializer: setupTx,
             saltNonce: 0
         }))));
+        // deployCodeTo('Safe.sol', address(safeAccount));
 
         execSafeTx(TxDetails({
-            account: company,
-            to: address(pluginManager),
+            signer: company,
+            to: address(safeAccount),
             value: 0,
             data: abi.encodeWithSelector(
-                SafeProtocolManager.enablePlugin.selector,
-                address(safePlugin),
-                1
+                ModuleManager.enableModule.selector,
+                pluginManager
             ),
             operation: Enum.Operation.Call,
             safeTxGas: 0,
@@ -88,8 +89,23 @@ contract CovarianceHubTest is Test {
             gasToken: address(0),
             refundReceiver: payable(0)
         }));
-
-        // deployCodeTo('Safe.sol', address(safeAccount));
+        execSafeTx(TxDetails({
+            signer: company,
+            to: address(pluginManager),
+            value: 0,
+            data: abi.encodeWithSelector(
+                SafeProtocolManager.enablePlugin.selector,
+                safePlugin,
+                1,
+                safeAccount
+            ),
+            operation: Enum.Operation.Call,
+            safeTxGas: 0,
+            baseGas: 0,
+            gasPrice: 0,
+            gasToken: address(0),
+            refundReceiver: payable(0)
+        }));
     }
 
     function getDataHash (TxDetails memory details) private view returns (bytes32) {
@@ -116,11 +132,11 @@ contract CovarianceHubTest is Test {
         bytes32 dataHash = getDataHash(details);
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(
-            details.account,
+            details.signer,
             dataHash
         );
 
-        try safeAccount.execTransaction({
+        return safeAccount.execTransaction({
             to: details.to,
             value: details.value,
             data: details.data,
@@ -131,12 +147,7 @@ contract CovarianceHubTest is Test {
             gasToken: details.gasToken,
             refundReceiver: details.refundReceiver,
             signatures: abi.encodePacked(r, s, v + 4)
-        }) returns (bool success) {
-            return success;
-        }
-        catch {
-            return false;
-        }
+        });
     }
 
     function createCampaignViaSafe () public returns (bool) {
@@ -174,7 +185,7 @@ contract CovarianceHubTest is Test {
         );
 
         return execSafeTx(TxDetails({
-            account: company,
+            signer: company,
             to: address(testContract),
             value: 0,
             data: data,
@@ -198,7 +209,8 @@ contract CovarianceHubTest is Test {
     }
 
     function test_settleContribution_invokeOOV3() public {
-        createCampaignViaSafe();
+        deal(address(WETH), address(safeAccount), 0.15 ether);
+        createCampaignViaSafe(WETH, 0.13 ether);
 
         Contribution[] memory contributions = new Contribution[](1);
         contributions[0] = Contribution({
@@ -228,6 +240,9 @@ contract CovarianceHubTest is Test {
             uint8(testContract.contributionStatus(1)),
             uint8(Status.APPROVED)
         );
+
+        assertEq(WETH.balanceOf(contributor.addr), 0.01 ether);
+        assertEq(WETH.balanceOf(address(safeAccount)), 0.14 ether);
     }
 
     function test_approveTwice_shouldRevert() public {
@@ -409,9 +424,58 @@ contract CovarianceHubTest is Test {
         assertTrue(success);
     }
 
-    function test_campaignWithRewardNoBalance_txShouldFail() public {
-        bool success = createCampaignViaSafe(WETH, 1 ether);
-        assertFalse(success);
+    function test_campaignWithRewardNoBalance_shouldRevert() public {
+        Challenge[] memory challenges = new Challenge[](1);
+        challenges[0] = Challenge({
+            kpi: 'Bring customers',
+            points: 10,
+            maxContributions: 3,
+            contributionsSpent: 0
+        });
+
+        bytes memory data = abi.encodeWithSelector(
+            CovarianceHub.createCampaign.selector,
+            Campaign({
+                initiator: safeAccount,
+                title: 'Test Campaign',
+                ipfsCid: '',
+                rewardToken: WETH,
+                rewardAmount: 1 ether,
+                challenges: challenges
+            })
+        );
+
+        bytes32 dataHash = getDataHash(TxDetails({
+            signer: company,
+            to: address(testContract),
+            value: 0,
+            data: data,
+            operation: Enum.Operation.Call,
+            safeTxGas: 0,
+            baseGas: 0,
+            gasPrice: 0,
+            gasToken: address(0),
+            refundReceiver: payable(0)
+        }));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(
+            company,
+            dataHash
+        );
+
+        vm.expectRevert('GS013');
+        safeAccount.execTransaction({
+            to: address(testContract),
+            value: 0,
+            data: data,
+            operation: Enum.Operation.Call,
+            safeTxGas: 0,
+            baseGas: 0,
+            gasPrice: 0,
+            gasToken: address(0),
+            refundReceiver: payable(0),
+            signatures: abi.encodePacked(r, s, v + 4)
+        });
     }
 
     function test_createCampaignTwice_getAccountCampaigns() public {
