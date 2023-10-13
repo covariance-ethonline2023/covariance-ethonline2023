@@ -19,6 +19,7 @@ The Safe account needs to approve the "Plugins" module and enable the Covariance
 plugin using the Plugins demo app.
 
 Plugins module:
+
 https://app.safe.global/share/safe-app?appUrl=https%3A%2F%2F5afe.github.io%2Fsafe-core-protocol-demo&chain=gor
 
 Once the Safe account is set up, the company can create a "Campaign". The
@@ -30,7 +31,9 @@ Contributors submit their contributions and wait for approvals.
 
 The company goes over every contribution and approves the ones that complied
 with the requirements. Once it's approved, an assertion is made on the UMA
-Optimistic oracle.
+Optimistic oracle:
+
+https://testnet.oracle.uma.xyz/
 
 If no one disputes the assertion on the Optimistic Oracle, it is considered
 approved, and the contributor can "settle" the claim. As part of the settlement,
