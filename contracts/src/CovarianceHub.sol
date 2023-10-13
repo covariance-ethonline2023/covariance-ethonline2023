@@ -73,10 +73,11 @@ contract CovarianceHub {
 
     OptimisticOracleV3Interface constant oov3 = OptimisticOracleV3Interface(0x9923D42eF695B5dd9911D05Ac944d4cAca3c4EAB);
     IERC20 private constant WETH = IERC20(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
-    CovarianceSafePlugin immutable plugin;
+    CovarianceSafePlugin plugin;
+    address public owner;
 
-    constructor (CovarianceSafePlugin _plugin) {
-        plugin = _plugin;
+    constructor () {
+        owner = msg.sender;
     }
 
     function campaignsByAccount (
@@ -235,5 +236,12 @@ contract CovarianceHub {
         if (msg.sender != address(oov3)) revert NotAllowed();
         uint contribId = contributionByAssertion[assertionId];
         contributionStatus[contribId] = Status.DISPUTED;
+    }
+
+    function setPlugin (
+        CovarianceSafePlugin _plugin
+    ) external {
+        if (msg.sender != owner) revert NotAllowed();
+        plugin = _plugin;
     }
 }

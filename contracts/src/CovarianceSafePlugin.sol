@@ -10,6 +10,8 @@ import {
 } from 'safe-core-protocol/SafeProtocolManager.sol';
 import '@openzeppelin/contracts/interfaces/IERC20.sol';
 
+import { CovarianceHub, NotAllowed } from './CovarianceHub.sol';
+
 struct PluginMetadata {
     string name;
     string version;
@@ -26,8 +28,11 @@ contract CovarianceSafePlugin is ISafeProtocolPlugin {
     PluginMetadata public pluginMetadata;
     bytes public encodedMetadata;
     bytes32 public immutable metadataHash;
+    CovarianceHub public covarianceHub;
+    address public owner;
 
     constructor () {
+        owner = msg.sender;
         pluginMetadata = PluginMetadata({
             name: unicode'♓ Covariance',
             version: '1.0.0-rc1',
@@ -75,12 +80,20 @@ contract CovarianceSafePlugin is ISafeProtocolPlugin {
         return false;
     }
 
+    function setHub (
+        CovarianceHub hub
+    ) external {
+        if (msg.sender != owner) revert NotAllowed();
+        covarianceHub = hub;
+    }
+
     function payout (
         Safe from,
         address to,
         IERC20 rewardToken,
         uint amount
     ) external {
+        if (msg.sender != address(covarianceHub)) revert NotAllowed();
         SafeProtocolAction[] memory actions = new SafeProtocolAction[](1);
 
         actions[0] = SafeProtocolAction({

@@ -16,8 +16,12 @@ contract CovarianceHubScript is Script {
         vm.createSelectFork('goerli');
         address deployer = vm.envAddress('DEPLOYER');
         vm.startBroadcast(deployer);
+
         CovarianceSafePlugin plugin = new CovarianceSafePlugin();
+        CovarianceHub hub = new CovarianceHub();
+
         pluginRegistry.addModule(address(plugin), 1);
-        new CovarianceHub(plugin);
+        hub.setPlugin(plugin);
+        plugin.setHub(hub);
     }
 }

@@ -50,7 +50,9 @@ contract CovarianceHubTest is Test {
         vm.createSelectFork('goerli');
         safePlugin = new CovarianceSafePlugin();
         pluginRegistry.addModule(address(safePlugin), 1);
-        testContract = new CovarianceHub(safePlugin);
+        testContract = new CovarianceHub();
+        testContract.setPlugin(safePlugin);
+        safePlugin.setHub(testContract);
 
         address[] memory owners = new address[](1);
         owners[0] = company.addr;
@@ -196,6 +198,29 @@ contract CovarianceHubTest is Test {
             gasToken: address(0),
             refundReceiver: payable(0)
         }));
+    }
+
+    function test_setPluginOnHub_shouldRevert () public {
+        vm.expectRevert(NotAllowed.selector);
+        vm.prank(contributor.addr);
+        testContract.setPlugin(CovarianceSafePlugin(address(1)));
+    }
+
+    function test_setHubOnPlugin_shouldRevert () public {
+        vm.expectRevert(NotAllowed.selector);
+        vm.prank(contributor.addr);
+        safePlugin.setHub(CovarianceHub(address(1)));
+    }
+
+    function test_callPayoutOnPluginDirectly_shouldRevert () public {
+        deal(address(WETH), address(safeAccount), 0.15 ether);
+        vm.expectRevert(NotAllowed.selector);
+        safePlugin.payout({
+            from: safeAccount,
+            to: contributor.addr,
+            rewardToken: WETH,
+            amount: 0.1 ether
+        });
     }
 
     function test_invokeOovDisputedCallbackDirectly_shouldRevert () public {
