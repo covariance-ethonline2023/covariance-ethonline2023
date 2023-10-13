@@ -17,15 +17,20 @@ participant "<img:https://icon-library.com/images/small-business-icon-png/small-
 participant "<img:https://pbs.twimg.com/profile_images/1643941027898613760/gyhYEOCE_400x400.jpg{scale=0.11}>" as safeprotocol $safe
 participant "<img:https://img.favpng.com/1/20/24/wallet-icon-png-favpng-TQrAD3mHXn7Yey6wnt6aa97YF.jpg{scale=0.05}>\nMultisig" as safeaccount $company
 participant "<img:https://cdn3.iconfinder.com/data/icons/avatars-female/48/bl_799_avatar_employee_coder_programmer_designer_female_woman-512.png{scale=0.05}>\nContributor" as contributor $contributor
-participant "<img:https://softr-prod.imgix.net/applications/125c1d0e-866a-42bf-b831-89853e605024/assets/0dcef2ca-432b-44fe-8d94-f4a5a23ae5b2.png{scale=0.1}>\nHub" as covariance $covariance
 participant "<img:https://softr-prod.imgix.net/applications/125c1d0e-866a-42bf-b831-89853e605024/assets/0dcef2ca-432b-44fe-8d94-f4a5a23ae5b2.png{scale=0.1}>\nSafe Plugin" as safeplugin $covariance
+participant "<img:https://softr-prod.imgix.net/applications/125c1d0e-866a-42bf-b831-89853e605024/assets/0dcef2ca-432b-44fe-8d94-f4a5a23ae5b2.png{scale=0.1}>\nHub" as covariance $covariance
 participant "<img:https://pbs.twimg.com/profile_images/1498718890574155777/MoXuiz3z_400x400.jpg{scale=0.11}>" as umaprotocol $uma
 
 company -> safeprotocol: Create Safe account with Plugins app
 safeprotocol -> safeaccount: Create
 company -> safeaccount: Set up a new campaign
 safeaccount -> covariance: Set up a new campaign
-... Waiting for contributors to apply ...
+... Contributors apply ...
+contributor -> covariance: Apply for campaign
+... Company approves contributors ...
+company -> safeaccount: Approve contributors
+safeaccount -> covariance: Approve contributors
+... Contributors submit contributions ...
 contributor -> covariance: Submit contribution
 ... Waiting for company to approve ...
 company -> safeaccount: Approve contribution
@@ -33,9 +38,8 @@ safeaccount -> covariance: Approve contribution
 covariance -> umaprotocol: Assert contribution
 ... Waiting for disputes ...
 contributor -> umaprotocol: Request settlement
-umaprotocol -> safeplugin: Approve transfer
-safeplugin -> covariance: Validate claim
-covariance -> safeplugin: Confirm
+umaprotocol -> covariance: Notify settlement
+covariance -> safeplugin: Pay reward
 safeplugin -> safeaccount: Initiate transfer
 safeaccount -> contributor: Transfer reward to contributor
 
