@@ -153,12 +153,13 @@ contract CovarianceHubTest is Test {
     }
 
     function createCampaignViaSafe () public returns (bool) {
-        return createCampaignViaSafe(IERC20(address(0)), 0);
+        return createCampaignViaSafe(IERC20(address(0)), 0, 130);
     }
 
     function createCampaignViaSafe (
         IERC20 rewardToken,
-        uint rewardAmount
+        uint rewardAmount,
+        uint maxPoints
     ) public returns (bool) {
         Challenge[] memory challenges = new Challenge[](2);
         challenges[0] = Challenge({
@@ -182,7 +183,8 @@ contract CovarianceHubTest is Test {
                 ipfsCid: '',
                 rewardToken: rewardToken,
                 rewardAmount: rewardAmount,
-                challenges: challenges
+                challenges: challenges,
+                maxPoints: maxPoints
             })
         );
 
@@ -233,9 +235,78 @@ contract CovarianceHubTest is Test {
         testContract.assertionResolvedCallback('test', false);
     }
 
+    function test_settleContributionOverMaxPoints_payUpToLimit() public {
+        deal(address(WETH), address(safeAccount), 0.2 ether);
+        createCampaignViaSafe(WETH, 0.13 ether, 100);
+
+        Contribution[] memory contributions = new Contribution[](2);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 0,
+            amount: 1
+        });
+        contributions[1] = Contribution({
+            campaignId: 1,
+            challengeIndex: 1,
+            amount: 5
+        });
+
+        vm.prank(contributor.addr);
+        testContract.contribute(contributions);
+
+        vm.startPrank(company.addr);
+
+        testContract.approve(1);
+        testContract.approve(2);
+
+        vm.warp(block.timestamp + 120);
+
+        bytes32 assertion1 = testContract.assertionByContribution(1);
+        bytes32 assertion2 = testContract.assertionByContribution(2);
+
+        vm.stopPrank();
+        vm.prank(contributor.addr);
+        oov3.settleAndGetAssertionResult(assertion1);
+        vm.prank(contributor.addr);
+        oov3.settleAndGetAssertionResult(assertion2);
+
+        assertEq(WETH.balanceOf(contributor.addr), 0.13 ether);
+        assertEq(WETH.balanceOf(address(safeAccount)), 0.07 ether);
+    }
+
+    function test_settleContributionOverLimit_payUpToLimit() public {
+        deal(address(WETH), address(safeAccount), 0.15 ether);
+        createCampaignViaSafe(WETH, 0.13 ether, 130);
+
+        Contribution[] memory contributions = new Contribution[](1);
+        contributions[0] = Contribution({
+            campaignId: 1,
+            challengeIndex: 0,
+            amount: 5
+        });
+
+        vm.prank(contributor.addr);
+        testContract.contribute(contributions);
+
+        vm.startPrank(company.addr);
+
+        testContract.approve(1);
+
+        vm.warp(block.timestamp + 120);
+
+        bytes32 assertion = testContract.assertionByContribution(1);
+
+        vm.stopPrank();
+        vm.prank(contributor.addr);
+        oov3.settleAndGetAssertionResult(assertion);
+
+        assertEq(WETH.balanceOf(contributor.addr), 0.03 ether);
+        assertEq(WETH.balanceOf(address(safeAccount)), 0.12 ether);
+    }
+
     function test_settleContribution_invokeOOV3() public {
         deal(address(WETH), address(safeAccount), 0.15 ether);
-        createCampaignViaSafe(WETH, 0.13 ether);
+        createCampaignViaSafe(WETH, 0.13 ether, 130);
 
         Contribution[] memory contributions = new Contribution[](1);
         contributions[0] = Contribution({
@@ -445,7 +516,7 @@ contract CovarianceHubTest is Test {
 
     function test_campaignWithRewardHasBalance_txSucceeds() public {
         deal(address(WETH), address(safeAccount), 1 ether);
-        bool success = createCampaignViaSafe(WETH, 1 ether);
+        bool success = createCampaignViaSafe(WETH, 1 ether, 130);
         assertTrue(success);
     }
 
@@ -466,7 +537,8 @@ contract CovarianceHubTest is Test {
                 ipfsCid: '',
                 rewardToken: WETH,
                 rewardAmount: 1 ether,
-                challenges: challenges
+                challenges: challenges,
+                maxPoints: 100
             })
         );
 
@@ -531,7 +603,8 @@ contract CovarianceHubTest is Test {
             ipfsCid: '',
             rewardToken: IERC20(address(0)),
             rewardAmount: 0,
-            challenges: new Challenge[](1)
+            challenges: new Challenge[](1),
+            maxPoints: 100
         }));
     }
 }

@@ -40,6 +40,7 @@ struct Campaign {
     string title;
     string ipfsCid;
     Challenge[] challenges;
+    uint maxPoints;
 }
 
 struct Claim {
@@ -190,12 +191,33 @@ contract CovarianceHub {
         contributionByAssertion[assertionId] = contribId;
     }
 
+    function getCampaign (uint id) public view returns (Campaign memory campaign) {
+        // Campaign storage stored = ;
+        campaign.rewardAmount = campaignById[id].rewardAmount;
+        campaign.rewardToken = campaignById[id].rewardToken;
+        campaign.initiator = campaignById[id].initiator;
+        campaign.title = campaignById[id].title;
+        campaign.ipfsCid = campaignById[id].ipfsCid;
+        campaign.maxPoints = campaignById[id].maxPoints;
+        campaign.challenges = new Challenge[](campaignById[id].challenges.length);
+        for (uint i = 0; i < campaign.challenges.length; i++) {
+            Challenge storage challenge = campaignById[id].challenges[i];
+            campaign.challenges[i] = Challenge({
+                kpi: challenge.kpi,
+                points: challenge.points,
+                maxContributions: challenge.maxContributions,
+                contributionsSpent: challenge.contributionsSpent
+            });
+        }
+    }
+
     function storeCampaign (uint id, Campaign memory campaign) private {
         campaignById[id].rewardAmount = campaign.rewardAmount;
         campaignById[id].rewardToken = campaign.rewardToken;
         campaignById[id].initiator = campaign.initiator;
         campaignById[id].title = campaign.title;
         campaignById[id].ipfsCid = campaign.ipfsCid;
+        campaignById[id].maxPoints = campaign.maxPoints;
         for (uint i = 0; i < campaign.challenges.length; i++) {
             campaignById[id].challenges.push(campaign.challenges[i]);
         }
@@ -208,21 +230,24 @@ contract CovarianceHub {
         if (msg.sender != address(oov3)) revert NotAllowed();
         uint contribId = contributionByAssertion[assertionId];
         contributionStatus[contribId] = Status.APPROVED;
-        Campaign memory campaign = campaignById[_campaignByContribution[contribId]];
+        Campaign storage campaign = campaignById[_campaignByContribution[contribId]];
         Contribution memory contrib = contribution(contribId);
-        uint totalPoints;
+        uint remainingPointsBudget = campaign.maxPoints;
         for (uint i = 0; i < campaign.challenges.length; i++) {
-            Challenge memory challenge = campaign.challenges[i];
-            totalPoints += challenge.points * challenge.maxContributions;
+            Challenge storage challenge = campaign.challenges[i];
+            remainingPointsBudget -= challenge.contributionsSpent * challenge.points;
         }
-        uint rewardPerPoint = campaign.rewardAmount / totalPoints;
-        Challenge memory contribChallenge = campaign.challenges[contrib.challengeIndex];
+        uint rewardPerPoint = campaign.rewardAmount / campaign.maxPoints;
+        Challenge storage contribChallenge = campaign.challenges[contrib.challengeIndex];
         uint availableContribSpots = contribChallenge.maxContributions - contribChallenge.contributionsSpent;
         uint effectiveContribAmount = availableContribSpots > contrib.amount ?
             contrib.amount : availableContribSpots;
-        uint rewardAmount = effectiveContribAmount *
-            contribChallenge.points *
-            rewardPerPoint;
+        uint contribPointsAmount = effectiveContribAmount * contribChallenge.points;
+        uint effectivePointsAmount = contribPointsAmount > remainingPointsBudget ?
+            remainingPointsBudget : contribPointsAmount;
+        uint rewardAmount = effectivePointsAmount * rewardPerPoint;
+        
+        contribChallenge.contributionsSpent += effectiveContribAmount;
 
         plugin.payout({
             from: campaign.initiator,
