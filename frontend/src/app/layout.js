@@ -1,7 +1,18 @@
 import './globals.css'
-import { Inter } from 'next/font/google'
+import { workSans } from '@/lib/fonts.js'
+// import { WagmiConfig, createConfig, goerli } from 'wagmi'
+// import { createPublicClient, http } from 'viem'
 
-const inter = Inter({ subsets: ['latin'] })
+
+// const config = createConfig({
+//   autoConnect: true,
+//   publicClient: createPublicClient({
+//     chain: goerli,
+//     transport: http()
+//   }),
+// })
+
+
 
 export const metadata = {
   title: 'Covariance',
@@ -11,7 +22,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+       {/* <WagmiConfig config={config}> */}
+      <body className={workSans.style}>{children}</body>
+      {/* </WagmiConfig> */}
     </html>
   )
 }

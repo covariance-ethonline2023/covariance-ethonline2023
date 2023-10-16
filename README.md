@@ -95,4 +95,12 @@ It's recommended to perform a dry-run first (omit the `--broadcast` arg).
 
 ### Frontend
 
-TBD
+### How to run frontend on the localhost
+
+### move into frontend dir
+
+- ```cd frontend``` 
+
+- run ```npm install```
+
+- run ```npm run dev```
