@@ -38,7 +38,7 @@ contract CovarianceSafePlugin is ISafeProtocolPlugin {
             version: '1.0.0-rc1',
             requiresRootAccess: false,
             iconUrl: 'https://softr-prod.imgix.net/applications/125c1d0e-866a-42bf-b831-89853e605024/assets/0dcef2ca-432b-44fe-8d94-f4a5a23ae5b2.png',
-            appUrl: 'https://example.com'
+            appUrl: 'https://covariance-ethonline2023.vercel.app/'
         });
 
         encodedMetadata = pluginMetadata.encode();
