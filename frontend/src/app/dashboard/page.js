@@ -1,10 +1,10 @@
 
-import MyCampaigns from "./my-campaigns/page";
+// import MyCampaigns from "./my-campaigns/page";
 
 const Dashboard = () => {
   return (
     <div>
-        <MyCampaigns/>
+        {/* <MyCampaigns/> */}
     </div>
   );
 };
