@@ -162,21 +162,38 @@
         "components": [
           {
             "internalType": "uint256",
-            "name": "campaignId",
+            "name": "contributionId",
             "type": "uint256"
           },
           {
-            "internalType": "uint256",
-            "name": "challengeIndex",
-            "type": "uint256"
+            "internalType": "address",
+            "name": "contributor",
+            "type": "address"
           },
           {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "campaignId",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "challengeIndex",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct Contribution",
+            "name": "contribution",
+            "type": "tuple"
           }
         ],
-        "internalType": "struct Contribution[]",
+        "internalType": "struct ContributionInfo[]",
         "name": "contribs",
         "type": "tuple[]"
       }
@@ -505,6 +522,25 @@
     ],
     "name": "setPlugin",
     "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "contribId",
+        "type": "uint256"
+      }
+    ],
+    "name": "settle",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isApproved",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   }

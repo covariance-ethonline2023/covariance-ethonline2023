@@ -244,14 +244,11 @@ contract CovarianceHubTest is Test {
 
         vm.warp(block.timestamp + 120);
 
-        bytes32 assertion1 = testContract.assertionByContribution(1);
-        bytes32 assertion2 = testContract.assertionByContribution(2);
-
         vm.stopPrank();
         vm.prank(contributor.addr);
-        OOV3.settleAndGetAssertionResult(assertion1);
+        testContract.settle(1);
         vm.prank(contributor.addr);
-        OOV3.settleAndGetAssertionResult(assertion2);
+        testContract.settle(2);
 
         assertEq(WETH.balanceOf(contributor.addr), 0.13 ether);
         assertEq(WETH.balanceOf(address(safeAccount)), 0.07 ether);
@@ -277,11 +274,9 @@ contract CovarianceHubTest is Test {
 
         vm.warp(block.timestamp + 120);
 
-        bytes32 assertion = testContract.assertionByContribution(1);
-
         vm.stopPrank();
         vm.prank(contributor.addr);
-        OOV3.settleAndGetAssertionResult(assertion);
+        testContract.settle(1);
 
         assertEq(WETH.balanceOf(contributor.addr), 0.03 ether);
         assertEq(WETH.balanceOf(address(safeAccount)), 0.12 ether);
@@ -307,11 +302,9 @@ contract CovarianceHubTest is Test {
 
         vm.warp(block.timestamp + 120);
 
-        bytes32 assertion = testContract.assertionByContribution(1);
-
         vm.stopPrank();
         vm.prank(contributor.addr);
-        bool isApproved = OOV3.settleAndGetAssertionResult(assertion);
+        bool isApproved = testContract.settle(1);
 
         assertEq(isApproved, true);
 
@@ -402,13 +395,17 @@ contract CovarianceHubTest is Test {
         });
         testContract.contribute(contributions);
 
-        Contribution[] memory contribs = testContract.campaignContributions(1);
-        assertEq(contribs[0].campaignId, 1);
-        assertEq(contribs[0].challengeIndex, 0);
-        assertEq(contribs[0].amount, 1);
-        assertEq(contribs[1].campaignId, 1);
-        assertEq(contribs[1].challengeIndex, 1);
-        assertEq(contribs[1].amount, 2);
+        ContributionInfo[] memory contribs = testContract.campaignContributions(1);
+        assertEq(contribs[0].contributionId, 1);
+        assertEq(contribs[0].contributor, contributor.addr);
+        assertEq(contribs[0].contribution.campaignId, 1);
+        assertEq(contribs[0].contribution.challengeIndex, 0);
+        assertEq(contribs[0].contribution.amount, 1);
+        assertEq(contribs[1].contributionId, 2);
+        assertEq(contribs[1].contributor, contributor.addr);
+        assertEq(contribs[1].contribution.campaignId, 1);
+        assertEq(contribs[1].contribution.challengeIndex, 1);
+        assertEq(contribs[1].contribution.amount, 2);
     }
 
     function test_contribute_shouldStoreContributions() public {

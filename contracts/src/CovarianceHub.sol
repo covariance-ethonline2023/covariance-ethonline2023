@@ -17,43 +17,6 @@ error InvalidContribution(string field);
 error InvalidStateTransition();
 error NotAllowed();
 
-struct Contribution {
-    uint campaignId;
-    uint challengeIndex;
-    uint amount;
-}
-
-struct Challenge {
-    string kpi;
-    uint points;
-    uint maxContributions;
-    uint contributionsSpent;
-}
-
-struct Campaign {
-    uint rewardAmount;
-    IERC20 rewardToken;
-    Safe initiator;
-    string title;
-    string ipfsCid;
-    Challenge[] challenges;
-    uint maxPoints;
-}
-
-struct Claim {
-    Safe initiator;
-    uint campaignId;
-    Contribution contribution;
-}
-
-enum Status {
-    NONE,
-    SUBMITTED,
-    ASSERTING,
-    APPROVED,
-    DISPUTED
-}
-
 contract CovarianceHub {
     uint campaignId = 1;
     uint contributionId = 1;
@@ -63,7 +26,6 @@ contract CovarianceHub {
     mapping(uint => uint[]) private _contributionsByCampaign;
     mapping(uint => uint) private _campaignByContribution;
     mapping(uint => Contribution) private _contributionById;
-    mapping(uint => address) private _contributer;
     mapping(uint => Campaign) public campaignById;
     mapping(uint => Status) public contributionStatus;
     mapping(bytes32 => uint) public contributionByAssertion;
@@ -92,11 +54,14 @@ contract CovarianceHub {
 
     function campaignContributions (
         uint _campaignId
-    ) public view returns (Contribution[] memory contribs) {
+    ) public view returns (ContributionInfo[] memory contribs) {
         uint contribCount = _contributionsByCampaign[_campaignId].length;
-        contribs = new Contribution[](contribCount);
+        contribs = new ContributionInfo[](contribCount);
         for (uint i = 0; i < contribCount; i++) {
-            contribs[i] = contribution(_contributionsByCampaign[_campaignId][i]);
+            uint contribId = _contributionsByCampaign[_campaignId][i];
+            contribs[i].contributionId = contribId;
+            contribs[i].contributor = _accountByContribution[contribId];
+            contribs[i].contribution = contribution(contribId);
         }
     }
 
@@ -258,10 +223,60 @@ contract CovarianceHub {
         contributionStatus[contribId] = Status.DISPUTED;
     }
 
+    function settle (
+        uint contribId
+    ) external returns (bool isApproved) {
+        bytes32 assertion = assertionByContribution[contribId];
+        isApproved = OOV3.settleAndGetAssertionResult(assertion);
+    }
+
     function setPlugin (
         CovarianceSafePlugin _plugin
     ) external {
         if (msg.sender != owner) revert NotAllowed();
         plugin = _plugin;
     }
+}
+
+struct Contribution {
+    uint campaignId;
+    uint challengeIndex;
+    uint amount;
+}
+
+struct Challenge {
+    string kpi;
+    uint points;
+    uint maxContributions;
+    uint contributionsSpent;
+}
+
+struct Campaign {
+    uint rewardAmount;
+    IERC20 rewardToken;
+    Safe initiator;
+    string title;
+    string ipfsCid;
+    Challenge[] challenges;
+    uint maxPoints;
+}
+
+struct ContributionInfo {
+    uint contributionId;
+    address contributor;
+    Contribution contribution;
+}
+
+struct Claim {
+    Safe initiator;
+    uint campaignId;
+    Contribution contribution;
+}
+
+enum Status {
+    NONE,
+    SUBMITTED,
+    ASSERTING,
+    APPROVED,
+    DISPUTED
 }
