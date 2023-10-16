@@ -10,7 +10,7 @@ import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 
-const signUp = () => {
+const SignUp = () => {
 
   const { control, handleSubmit } = useForm({
     defaultValues: {
@@ -76,4 +76,4 @@ const signUp = () => {
   );
 };
 
-export default signUp;
+export default SignUp;

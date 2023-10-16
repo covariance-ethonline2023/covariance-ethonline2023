@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator"
 // import { useEffect } from 'react';
 // import { redirect } from 'next/navigation'
 
-const login = () => {
+const Login = () => {
   
   // const { address, isConnected } = useAccount()
   // const { connect } = useConnect({
@@ -103,4 +103,4 @@ const login = () => {
   );
 };
 
-export default login;
+export default Login;
