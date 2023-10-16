@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {
-    SafeProtocolRegistry
-} from 'safe-core-protocol/SafeProtocolRegistry.sol';
 import {Script, console2} from "forge-std/Script.sol";
 import '../src/CovarianceHub.sol';
+import '../src/external/Constants.sol';
 
 contract CovarianceHubScript is Script {
-    SafeProtocolRegistry constant pluginRegistry = SafeProtocolRegistry(0x2b18E7246d213676a0b9741fE860c7cC05D75cE2);
-
     function setUp() public {}
 
     function run() public {
@@ -20,7 +16,7 @@ contract CovarianceHubScript is Script {
         CovarianceSafePlugin plugin = new CovarianceSafePlugin();
         CovarianceHub hub = new CovarianceHub();
 
-        pluginRegistry.addModule(address(plugin), 1);
+        SAFE_PLUGIN_REGISTRY.addIntegration(address(plugin), 0);
         hub.setPlugin(plugin);
         plugin.setHub(hub);
     }

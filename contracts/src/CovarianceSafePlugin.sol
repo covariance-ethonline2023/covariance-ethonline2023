@@ -1,14 +1,14 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 import { Safe } from 'safe-contracts/Safe.sol';
-import { ISafeProtocolPlugin } from 'safe-core-protocol/interfaces/Modules.sol';
 import {
-    SafeProtocolManager,
-    SafeProtocolAction,
-    SafeTransaction
-} from 'safe-core-protocol/SafeProtocolManager.sol';
-import '@openzeppelin/contracts/interfaces/IERC20.sol';
+    ISafeProtocolPlugin
+} from './external/ITestSafeProtocolPlugin.sol';
+import {
+    TestSafeProtocolManager
+} from './external/TestSafeProtocolManager.sol';
+import './external/Constants.sol';
 
 import { CovarianceHub, NotAllowed } from './CovarianceHub.sol';
 
@@ -22,8 +22,6 @@ struct PluginMetadata {
 
 contract CovarianceSafePlugin is ISafeProtocolPlugin {
     using PluginMetadataOps for PluginMetadata;
-
-    SafeProtocolManager constant pluginManager = SafeProtocolManager(0x6a97233258CD825F45b73f4B14e2cE22D4627cAf);
 
     PluginMetadata public pluginMetadata;
     bytes public encodedMetadata;
@@ -50,7 +48,7 @@ contract CovarianceSafePlugin is ISafeProtocolPlugin {
     }
 
     function version() external view returns (string memory _version) {
-        _version = pluginMetadata.version; 
+        _version = pluginMetadata.version;
     }
 
     function metadataProvider() external view returns (
@@ -68,8 +66,8 @@ contract CovarianceSafePlugin is ISafeProtocolPlugin {
         return encodedMetadata;
     }
 
-    function requiresPermissions() external pure returns (uint8 permissions) {
-        permissions = 1;
+    function requiresRootAccess() external pure returns (bool rootAccess) {
+        rootAccess = false;
     }
 
     function supportsInterface(
@@ -94,9 +92,9 @@ contract CovarianceSafePlugin is ISafeProtocolPlugin {
         uint amount
     ) external {
         if (msg.sender != address(covarianceHub)) revert NotAllowed();
-        SafeProtocolAction[] memory actions = new SafeProtocolAction[](1);
+        TestSafeProtocolManager.SafeProtocolAction[] memory actions = new TestSafeProtocolManager.SafeProtocolAction[](1);
 
-        actions[0] = SafeProtocolAction({
+        actions[0] = TestSafeProtocolManager.SafeProtocolAction({
             to: payable(address(rewardToken)),
             value: 0,
             data: abi.encodeWithSelector(
@@ -106,9 +104,9 @@ contract CovarianceSafePlugin is ISafeProtocolPlugin {
             )
         });
 
-        pluginManager.executeTransaction({
-            account: address(from),
-            transaction: SafeTransaction({
+        SAFE_PLUGIN_MANAGER.executeTransaction({
+            safe: address(from),
+            transaction: TestSafeProtocolManager.SafeTransaction({
                 actions: actions,
                 nonce: from.nonce(),
                 metadataHash: metadataHash

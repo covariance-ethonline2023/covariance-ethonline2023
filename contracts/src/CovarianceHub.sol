@@ -8,10 +8,7 @@ import {
 import {
     OptimisticOracleV3CallbackRecipientInterface
 } from './external/OptimisticOracleV3CallbackRecipientInterface.sol';
-import '@openzeppelin/contracts/interfaces/IERC20.sol';
 import './CovarianceSafePlugin.sol';
-
-import { console2 } from 'forge-std/Test.sol';
 
 error NotEnoughFundsInSafe();
 error InitiatorNotSafeAccount();
@@ -72,8 +69,6 @@ contract CovarianceHub {
     mapping(bytes32 => uint) public contributionByAssertion;
     mapping(uint => bytes32) public assertionByContribution;
 
-    OptimisticOracleV3Interface constant oov3 = OptimisticOracleV3Interface(0x9923D42eF695B5dd9911D05Ac944d4cAca3c4EAB);
-    IERC20 private constant WETH = IERC20(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
     CovarianceSafePlugin plugin;
     address public owner;
 
@@ -171,7 +166,7 @@ contract CovarianceHub {
 
         contributionStatus[contribId] = Status.ASSERTING;
 
-        assertionId = oov3.assertTruth({
+        assertionId = OOV3.assertTruth({
             claim: abi.encode(Claim({
                 initiator: initiator,
                 campaignId: campId,
@@ -183,7 +178,7 @@ contract CovarianceHub {
             liveness: 30,
             currency: WETH,
             bond: 0,
-            identifier: oov3.defaultIdentifier(),
+            identifier: OOV3.defaultIdentifier(),
             domainId: ''
         });
 
@@ -227,7 +222,7 @@ contract CovarianceHub {
         bytes32 assertionId,
         bool
     ) external {
-        if (msg.sender != address(oov3)) revert NotAllowed();
+        if (msg.sender != address(OOV3)) revert NotAllowed();
         uint contribId = contributionByAssertion[assertionId];
         contributionStatus[contribId] = Status.APPROVED;
         Campaign storage campaign = campaignById[_campaignByContribution[contribId]];
@@ -258,7 +253,7 @@ contract CovarianceHub {
     }
 
     function assertionDisputedCallback(bytes32 assertionId) external {
-        if (msg.sender != address(oov3)) revert NotAllowed();
+        if (msg.sender != address(OOV3)) revert NotAllowed();
         uint contribId = contributionByAssertion[assertionId];
         contributionStatus[contribId] = Status.DISPUTED;
     }

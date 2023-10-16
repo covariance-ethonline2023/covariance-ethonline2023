@@ -3,29 +3,13 @@ pragma solidity ^0.8.13;
 
 import { Safe, Enum } from 'safe-contracts/Safe.sol';
 import { ModuleManager } from 'safe-contracts/base/ModuleManager.sol';
-import { SafeProxyFactory } from 'safe-contracts/proxies/SafeProxyFactory.sol';
-import {
-    SafeProtocolRegistry
-} from 'safe-core-protocol/SafeProtocolRegistry.sol';
-import {
-    SafeProtocolManager
-} from 'safe-core-protocol/SafeProtocolManager.sol';
-import {
-    OptimisticOracleV3Interface
-} from '../src/external/OptimisticOracleV3Interface.sol';
-import '@openzeppelin/contracts/interfaces/IERC20.sol';
 import { Test, console2 } from 'forge-std/Test.sol';
 import { Vm } from 'forge-std/Vm.sol';
 import '../src/CovarianceHub.sol';
 import '../src/CovarianceSafePlugin.sol';
+import '../src/external/Constants.sol';
 
 contract CovarianceHubTest is Test {
-    IERC20 private constant WETH = IERC20(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6);
-    SafeProxyFactory safeFactory = SafeProxyFactory(0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67);
-    Safe safeSingleton = Safe(payable(0x29fcB43b46531BcA003ddC8FCB67FFE91900C762));
-    OptimisticOracleV3Interface constant oov3 = OptimisticOracleV3Interface(0x9923D42eF695B5dd9911D05Ac944d4cAca3c4EAB);
-    SafeProtocolRegistry constant pluginRegistry = SafeProtocolRegistry(0x2b18E7246d213676a0b9741fE860c7cC05D75cE2);
-    SafeProtocolManager constant pluginManager = SafeProtocolManager(0x6a97233258CD825F45b73f4B14e2cE22D4627cAf);
     CovarianceHub public testContract;
     CovarianceSafePlugin safePlugin;
     Safe public safeAccount;
@@ -49,7 +33,7 @@ contract CovarianceHubTest is Test {
     function setUp() public {
         vm.createSelectFork('goerli');
         safePlugin = new CovarianceSafePlugin();
-        pluginRegistry.addModule(address(safePlugin), 1);
+        SAFE_PLUGIN_REGISTRY.addIntegration(address(safePlugin), 0);
         testContract = new CovarianceHub();
         testContract.setPlugin(safePlugin);
         safePlugin.setHub(testContract);
@@ -69,8 +53,8 @@ contract CovarianceHubTest is Test {
             address(0)
         );
 
-        safeAccount = Safe(payable(address(safeFactory.createProxyWithNonce({
-            _singleton: address(safeSingleton),
+        safeAccount = Safe(payable(address(SAFE_PROXY_FACTORY.createProxyWithNonce({
+            _singleton: address(SAFE_SINGLETON),
             initializer: setupTx,
             saltNonce: 0
         }))));
@@ -82,7 +66,7 @@ contract CovarianceHubTest is Test {
             value: 0,
             data: abi.encodeWithSelector(
                 ModuleManager.enableModule.selector,
-                pluginManager
+                SAFE_PLUGIN_MANAGER
             ),
             operation: Enum.Operation.Call,
             safeTxGas: 0,
@@ -93,13 +77,12 @@ contract CovarianceHubTest is Test {
         }));
         execSafeTx(TxDetails({
             signer: company,
-            to: address(pluginManager),
+            to: address(SAFE_PLUGIN_MANAGER),
             value: 0,
             data: abi.encodeWithSelector(
-                SafeProtocolManager.enablePlugin.selector,
+                TestSafeProtocolManager.enablePlugin.selector,
                 safePlugin,
-                1,
-                safeAccount
+                false
             ),
             operation: Enum.Operation.Call,
             safeTxGas: 0,
@@ -266,9 +249,9 @@ contract CovarianceHubTest is Test {
 
         vm.stopPrank();
         vm.prank(contributor.addr);
-        oov3.settleAndGetAssertionResult(assertion1);
+        OOV3.settleAndGetAssertionResult(assertion1);
         vm.prank(contributor.addr);
-        oov3.settleAndGetAssertionResult(assertion2);
+        OOV3.settleAndGetAssertionResult(assertion2);
 
         assertEq(WETH.balanceOf(contributor.addr), 0.13 ether);
         assertEq(WETH.balanceOf(address(safeAccount)), 0.07 ether);
@@ -298,7 +281,7 @@ contract CovarianceHubTest is Test {
 
         vm.stopPrank();
         vm.prank(contributor.addr);
-        oov3.settleAndGetAssertionResult(assertion);
+        OOV3.settleAndGetAssertionResult(assertion);
 
         assertEq(WETH.balanceOf(contributor.addr), 0.03 ether);
         assertEq(WETH.balanceOf(address(safeAccount)), 0.12 ether);
@@ -328,7 +311,7 @@ contract CovarianceHubTest is Test {
 
         vm.stopPrank();
         vm.prank(contributor.addr);
-        bool isApproved = oov3.settleAndGetAssertionResult(assertion);
+        bool isApproved = OOV3.settleAndGetAssertionResult(assertion);
 
         assertEq(isApproved, true);
 
@@ -378,7 +361,7 @@ contract CovarianceHubTest is Test {
         vm.startPrank(company.addr);
 
         bytes32 assertionId = testContract.approve(1);
-        address recipient = oov3.getAssertion(assertionId).callbackRecipient;
+        address recipient = OOV3.getAssertion(assertionId).callbackRecipient;
 
         assertEq(recipient, address(testContract));
     }
