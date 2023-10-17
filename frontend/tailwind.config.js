@@ -17,6 +17,12 @@ module.exports = {
       },
     },
     extend: {
+      colors: {
+          appBlack: '#15171A',
+          appGlass: '#00000025',
+          appGreen: '#32DE8A',
+          transparent: 'transparent'
+      },
       fontFamily: {
         workSans: ["var(--work-font)"],
       },

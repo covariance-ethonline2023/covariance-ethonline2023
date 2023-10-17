@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
        {/* <WagmiConfig config={config}> */}
-      <body className={workSans.style}>{children}</body>
+      <body className={`${workSans.className} bg-cover bg-appBlack bg-[url('/images/bg.svg')]`}>{children}</body>
       {/* </WagmiConfig> */}
     </html>
   )
