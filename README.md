@@ -93,14 +93,24 @@ $ forge script --broadcast CovarianceHubScript
 
 It's recommended to perform a dry-run first (omit the `--broadcast` arg).
 
-### Frontend
+---
 
-### How to run frontend on the localhost
+## Frontend
 
-### move into frontend dir
 
-- ```cd frontend``` 
+#### Link to the dapp: [Covariance](https://covariance-ethonline2023.vercel.app/)
 
-- run ```npm install```
+### How to run frontend on the localhost:
 
-- run ```npm run dev```
+ - move into `frontend` dir
+```console
+cd frontend 
+
+npm install
+
+npm run dev
+```
+
+- type `http://localhost:3000/` on the browser to view the app locally
+
+---
