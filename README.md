@@ -1,6 +1,6 @@
-<img src="./ethgLobal.svg" alt="ethglobal logo" height=100 />
+<img src="./ethglobal.svg" alt="ethglobal logo" height=100 />
 
-# <img src="./logo.jpg" alt="Covariance Logo" height=50 style="vertical-align:bottom;"/> Covariance ETHOnline 2023
+# <img src="./logo.svg" alt="Covariance Logo" height=50 />
 
 Covariance - a new way to Go-To-Market. It’s called Network-to-Market (or Contributor-To-Market).
 Traditional SaaS companies build their B2B or B2C GTM based of their own in house sales, growth and BD teams.
