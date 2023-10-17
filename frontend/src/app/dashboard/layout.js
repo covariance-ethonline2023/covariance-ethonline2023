@@ -8,7 +8,7 @@ const Layout = ({ children }) => {
             <NavBar /> 
             <div className="flex items-stretch h-[calc(100vh-72px)] overflow-hidden "> 
                 <Sidebar active={""}/> 
-                <div className="flex-1 p-8">
+                <div className="flex-1 p-32 pt-16">
                     {children}
                 </div>
             </div> 

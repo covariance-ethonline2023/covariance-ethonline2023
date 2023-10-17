@@ -21,6 +21,9 @@ module.exports = {
           appBlack: '#15171A',
           appGlass: '#00000025',
           appGreen: '#32DE8A',
+          appGreenDark: '#28B26E',
+          appGray: '#212925',
+          appSecondary: '#ADF2D040',
           transparent: 'transparent'
       },
       fontFamily: {
