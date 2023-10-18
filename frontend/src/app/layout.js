@@ -11,6 +11,6 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
       <html lang="en">
-        <body className={workSans.style}><Providers>{children}</Providers></body>
+      <body className={`${workSans.className} bg-cover bg-appBlack bg-[url('/images/bg.svg')]`}><Providers>{children}</Providers></body>
       </html>
 )}
