@@ -1,8 +1,6 @@
-// import { WagmiConfig } from 'wagmi'
 import Providers from './_providers/Providers'
 import './globals.css'
 import { workSans } from '@/lib/fonts.js'
-// import { client } from './_providers/WagmiProvider'
 
 
 export const metadata = {

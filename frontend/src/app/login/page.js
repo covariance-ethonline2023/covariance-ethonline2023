@@ -1,29 +1,29 @@
 "use client"
 
+import { useEffect } from 'react'
 import { useAccount, useConnect } from 'wagmi'
-// import { InjectedConnector } from 'wagmi/connectors/injected'
 import { useForm, Controller } from "react-hook-form"
 import {Input} from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
-// import { useEffect } from 'react';
-// import { redirect } from 'next/navigation'
+import Spinner from '@/components/ui/spinner'
+import { redirect } from 'next/navigation'
+
+
 
 const Login = () => {
   
-  const { address, isConnected } = useAccount()
   const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
+  const {isConnected} = useAccount()
 
-  // useEffect(() => {
-  //   if(isConnected){
-  //     redirect("/dashboard");
-  //   }
-  // }, [isConnected])
+  useEffect(() => {
+    if(isConnected){
+      redirect("/dashboard/my-campaigns")
+    }
+  }, [isConnected])
 
 
   const { control, handleSubmit } = useForm({
@@ -33,17 +33,6 @@ const Login = () => {
     },
   })
   const onSubmit = (data) => console.log(data);
-
-  // const connectWallet = async () => {
-  //   console.log("connecting");
-  //   try {
-  //     const wagmi = new Wagmi();
-  //     await wagmi.enable(); // Request user to connect wallet
-  //     setIsConnected(true);
-  //   } catch (error) {
-  //     console.error('Error connecting wallet:', error);
-  //   }
-  // };
 
   return (
     <Card className="w-[1152px] h-[578px] flex flex-col justify-evenly">
@@ -84,7 +73,6 @@ const Login = () => {
             Log in with the wallet address connected <br/> to your Covariance account
             </AlertDescription>
           </Alert>
-          {/* <Button onClick={() => connect()}>Connect</Button> */}
 
           {connectors.map((connector) => (
         <Button
@@ -92,24 +80,14 @@ const Login = () => {
           key={connector.id}
           onClick={() => connect({ connector })}
         >
-          Connect
-          {isLoading &&
-            pendingConnector?.id === connector.id &&
-            ' (connecting)'}
+          {(isLoading &&
+            pendingConnector?.id === connector.id) ?
+             <><Spinner/> Connecting</> : "Connect"}
         </Button>
       ))}
-
+          {error && <p className="text-red-800 pt-3">Error occured while connecting to wallet. Try Again!</p>}
         </div>
       </CardContent>
-
-      <Separator className="my-4" />
-
-      <CardFooter className="flex flex-row justify-center">
-        Already have an account? 
-        <Button variant="link" asChild className="pl-1 primary">
-          <Link href="/login">Log in</Link>
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

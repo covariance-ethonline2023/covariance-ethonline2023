@@ -9,8 +9,11 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
+import Spinner from "@/components/ui/spinner"
+import { useConnect } from 'wagmi'
 
 const SignUp = () => {
+  const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
 
   const { control, handleSubmit } = useForm({
     defaultValues: {
@@ -59,8 +62,18 @@ const SignUp = () => {
               Use the wallet address your <br/> contributor payments would go to.
             </AlertDescription>
           </Alert>
-          <Button>Connect</Button>
-
+          {connectors.map((connector) => (
+        <Button
+          disabled={!connector.ready}
+          key={connector.id}
+          onClick={() => connect({ connector })}
+        >
+          {(isLoading &&
+            pendingConnector?.id === connector.id) ?
+             <><Spinner/> Connecting</> : "Connect"}
+        </Button>
+      ))}
+        {error && <p className="text-red-800 pt-3">Error occured while connecting to wallet. Try Again!</p>}
         </div>
       </CardContent>
 

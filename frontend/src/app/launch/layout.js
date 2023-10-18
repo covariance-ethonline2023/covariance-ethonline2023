@@ -1,11 +1,14 @@
 import { NavBar } from "@/components/navbar";
+import { UserTypeProvider } from "../context/userTypeContext";
 
 const Layout = ({ children }) => { 
 
     return ( 
       <> 
         <NavBar /> 
-        {children} 
+        <UserTypeProvider>
+        {children}
+        </UserTypeProvider> 
       </> 
     ); 
   }; 
