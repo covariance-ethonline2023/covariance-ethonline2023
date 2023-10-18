@@ -8,7 +8,7 @@ export const NavBar = ({navItems, button}) => {
 
 
   return (
-      <nav className="bg-gray-800 text-white p-4 flex items-center justify-between">
+      <nav className="bg-appGlass text-white p-4 pl-8 flex items-center justify-between h-[72px]">
         <div className="flex items-center">
           <Image src="../images/logo.svg" width={145} height={24}/>
           <div className="flex-1 flex justify-center">

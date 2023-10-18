@@ -15,7 +15,15 @@ const Campaigns = () => {
 
     },[showCampaigns]);
 
-    const fakecampaignData={name: "NFT Strategy Development", location: "Binance Exchange CA, USA.", duration:"Dec 30th - Jan 29th", progress: 60, amount: "$5000", amountUnit: "$5/KPI"}
+    const fakecampaignData={
+        name: "NFT Strategy Development",
+        location: "Binance Exchange CA, USA.",
+        duration:"Dec 30th - Jan 29th",
+        progress: 20,
+        amount: "$12,000",
+        amountUnit: "$5/KPI",
+        imgSrc: "https://user-images.githubusercontent.com/3975770/212338977-5968eae5-bb1b-4e71-8f82-af5282564c66.png"
+    }
 
 
     
