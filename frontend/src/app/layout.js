@@ -1,17 +1,8 @@
+// import { WagmiConfig } from 'wagmi'
+import Providers from './_providers/Providers'
 import './globals.css'
 import { workSans } from '@/lib/fonts.js'
-// import { WagmiConfig, createConfig, goerli } from 'wagmi'
-// import { createPublicClient, http } from 'viem'
-
-
-// const config = createConfig({
-//   autoConnect: true,
-//   publicClient: createPublicClient({
-//     chain: goerli,
-//     transport: http()
-//   }),
-// })
-
+// import { client } from './_providers/WagmiProvider'
 
 
 export const metadata = {
@@ -21,10 +12,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-       {/* <WagmiConfig config={config}> */}
-      <body className={`${workSans.className} bg-cover bg-appBlack bg-[url('/images/bg.svg')]`}>{children}</body>
-      {/* </WagmiConfig> */}
-    </html>
-  )
-}
+      <html lang="en">
+        <body className={workSans.style}><Providers>{children}</Providers></body>
+      </html>
+)}

@@ -1,6 +1,6 @@
 "use client"
 
-// import { useAccount, useConnect } from 'wagmi'
+import { useAccount, useConnect } from 'wagmi'
 // import { InjectedConnector } from 'wagmi/connectors/injected'
 import { useForm, Controller } from "react-hook-form"
 import {Input} from "@/components/ui/input"
@@ -16,10 +16,8 @@ import { Separator } from "@/components/ui/separator"
 
 const Login = () => {
   
-  // const { address, isConnected } = useAccount()
-  // const { connect } = useConnect({
-  //   connector: new InjectedConnector(),
-  // })
+  const { address, isConnected } = useAccount()
+  const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
 
   // useEffect(() => {
   //   if(isConnected){
@@ -36,16 +34,16 @@ const Login = () => {
   })
   const onSubmit = (data) => console.log(data);
 
-  const connectWallet = async () => {
-    console.log("cannect");
-    try {
-      const wagmi = new Wagmi();
-      await wagmi.enable(); // Request user to connect wallet
-      setIsConnected(true);
-    } catch (error) {
-      console.error('Error connecting wallet:', error);
-    }
-  };
+  // const connectWallet = async () => {
+  //   console.log("connecting");
+  //   try {
+  //     const wagmi = new Wagmi();
+  //     await wagmi.enable(); // Request user to connect wallet
+  //     setIsConnected(true);
+  //   } catch (error) {
+  //     console.error('Error connecting wallet:', error);
+  //   }
+  // };
 
   return (
     <Card className="w-[1152px] h-[578px] flex flex-col justify-evenly">
@@ -86,7 +84,20 @@ const Login = () => {
             Log in with the wallet address connected <br/> to your Covariance account
             </AlertDescription>
           </Alert>
-          <Button onClick={() => connect()}>Connect</Button>
+          {/* <Button onClick={() => connect()}>Connect</Button> */}
+
+          {connectors.map((connector) => (
+        <Button
+          disabled={!connector.ready}
+          key={connector.id}
+          onClick={() => connect({ connector })}
+        >
+          Connect
+          {isLoading &&
+            pendingConnector?.id === connector.id &&
+            ' (connecting)'}
+        </Button>
+      ))}
 
         </div>
       </CardContent>
