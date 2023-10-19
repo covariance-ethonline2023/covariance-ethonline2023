@@ -10,10 +10,20 @@ import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import Spinner from "@/components/ui/spinner"
-import { useConnect } from 'wagmi'
+import { useConnect, useAccount } from 'wagmi'
+import { useEffect } from "react"
+import { redirect } from "next/navigation"
 
 const SignUp = () => {
   const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
+  const {isConnected} = useAccount()
+
+  useEffect(() => {
+    if(isConnected){
+      redirect("/dashboard/my-campaigns")
+    }
+  }, [isConnected])
+
 
   const { control, handleSubmit } = useForm({
     defaultValues: {
