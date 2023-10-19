@@ -24,7 +24,8 @@ module.exports = {
           appGreenDark: '#28B26E',
           appGray: '#212925',
           appSecondary: '#ADF2D040',
-          transparent: 'transparent'
+          transparent: 'transparent',
+          appRed: '#FC5555',
       },
       fontFamily: {
         workSans: ["var(--work-font)"],
