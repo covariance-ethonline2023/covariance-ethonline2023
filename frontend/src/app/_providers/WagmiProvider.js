@@ -5,10 +5,9 @@ import { goerli } from 'wagmi/chains'
 // import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 import { publicProvider } from 'wagmi/providers/public'
 
-
 const {chains, publicClient } = configureChains(
     [goerli], 
-    [alchemyProvider({  apiKey: process.env.NEXT_APP_ALCHEMY_API_KEY || ''  }), publicProvider() ],
+    [alchemyProvider({  apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || ''  }), publicProvider() ],
  )
 
 export const config = createConfig({
