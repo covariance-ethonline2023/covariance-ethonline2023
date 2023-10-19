@@ -3,7 +3,13 @@ import CircularProgress from "./circularProgress"
 import { Button } from "./button"
 import Image from "next/image"
 
-  export function CampaignCard({campaignData, actionBtn, type, onCardClick}) {
+  export function CampaignCard({
+      buttonLabel,
+      campaignData,
+      actionBtn,
+      type,
+      onCardClick
+  }) {
 
 
     const handleCardClick = () => {
@@ -11,7 +17,7 @@ import Image from "next/image"
       };
 
     const handleActionBtn = () => {
-    actionBtn(campaignData);
+        actionBtn(campaignData);
     };
 
     return (
@@ -46,7 +52,7 @@ import Image from "next/image"
                 rounded-[2rem] p-1 pl-6 pr-6 bg-appGreenDark hover:bg-appGreenDark
                 whitespace-nowrap text-xs h-auto
             `}>
-                {type === "contribute" ? "CONTRIBUTE" : "CLAIM REWARDS"}
+                {buttonLabel}
             </Button>
         </div>
       </Card>

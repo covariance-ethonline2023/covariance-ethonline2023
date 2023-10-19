@@ -51,7 +51,7 @@ const Campaigns = () => {
 
         {showModal ? <ContributorForm open={showModal} setOpen={()=>setShowModal(!showModal)}/> : <>
             
-              {showCampaigns && <CampaignCard type={"contribute"} campaignData={fakecampaignData} actionBtn={handleContribute} onCardClick={handleselectedCard}/>}
+              {showCampaigns && <CampaignCard buttonLabel={"CONTRIBUTE"} campaignData={fakecampaignData} actionBtn={handleContribute} onCardClick={handleselectedCard}/>}
             
             {/* get data and map */}
             {/* {CampaignCardDataArray.map((card) => (

@@ -30,7 +30,7 @@ const MyCampaigns = () => {
                 </TabsList>
                 <TabsContent value="current">
                      {/* get data and map */}
-                    <CampaignCard type={"claim"} campaignData={fakecampaignClaimData} actionBtn={()=> handleClaimReward}/>
+                    <CampaignCard buttonLabel={"CLAIM REWARDS"} campaignData={fakecampaignClaimData} actionBtn={()=> handleClaimReward}/>
                 </TabsContent>
 
                 <TabsContent value="history">

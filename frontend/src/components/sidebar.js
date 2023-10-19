@@ -36,16 +36,17 @@ const Sidebar = () => {
     <div className="bg-appGlass text-white w-100 text-16 font-medium pt-16 pl-8 grow-0 shrink-0 w-[280px] overflow-y-auto flex flex-col">
       <div>
         <ul className="space-y-2">
-          <li className={`p-2 mb-4 rounded ${itemClass("my-campaigns")}`}>
-            <Link className="flex items-center" href="/dashboard/my-campaigns">
-            <svg className="grow-0 shrink-0 mr-4" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8 15V17M12 11V17M16 7V17M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            My campaigns
-            </Link>            
-          </li>
-
           { userType === "contributor" ? 
+              <>
+              <li className={`p-2 mb-4 rounded ${itemClass("my-campaigns")}`}>
+                <Link className="flex items-center" href="/dashboard/my-campaigns">
+                <svg className="grow-0 shrink-0 mr-4" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 15V17M12 11V17M16 7V17M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                My campaigns
+                </Link>            
+              </li>
+
             <li className={`p-2 rounded ${itemClass("find-campaigns")}`}>
               <Link className="flex items-center" href="/dashboard/find-campaigns">
               <svg className="grow-0 shrink-0 mr-4" width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -54,7 +55,19 @@ const Sidebar = () => {
               </svg>
               Find campaigns
               </Link>            
-            </li> :
+            </li>
+          </>
+              :
+              <>
+              <li className={`p-2 mb-4 rounded ${itemClass("review-campaigns")}`}>
+                <Link className="flex items-center" href="/dashboard/review-campaigns">
+                <svg className="grow-0 shrink-0 mr-4" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 15V17M12 11V17M16 7V17M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Campaigns
+                </Link>            
+              </li>
+
             <li className={`p-2 rounded ${itemClass("create-campaign")}`}>
             <Link className="flex items-center" href="/dashboard/create-campaign">
             <svg className="grow-0 shrink-0 mr-4" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -64,6 +77,7 @@ const Sidebar = () => {
             New campaign
             </Link>            
           </li>
+          </>
           }
 
         </ul>
