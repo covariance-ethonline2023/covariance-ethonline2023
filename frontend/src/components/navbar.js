@@ -2,10 +2,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from "@/components/ui/button"
+import CustomLink from './CustomLink';
 
 
 export const NavBar = ({navItems, button}) => {
-
 
   return (
       <nav className="bg-appGlass text-white p-4 pl-8 flex items-center justify-between h-[72px]">
@@ -28,11 +28,7 @@ export const NavBar = ({navItems, button}) => {
       <Button 
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" 
         onClick={button.onClick}> 
-          {button.title === "LOG IN"  ? 
-          <Link href={"/login"}>{button.title}</Link> : 
-          button.title === "SIGN UP" ? 
-          <Link href={"/signup"}>{button.title}</Link> : 
-          button.title}
+          <CustomLink title={button.title}/>
       </Button>}
       </nav>
   );
