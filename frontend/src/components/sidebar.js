@@ -1,15 +1,31 @@
 "use client"
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-// import {useDisconnect } from 'wagmi'
+import { usePathname, useRouter } from 'next/navigation';
+import { Button } from './ui/button';
+import { Separator } from './ui/separator';
+import {useDisconnect, useAccount } from 'wagmi'
 
 
 
 const Sidebar = () => {
   const currentRoute = usePathname();
-  // const { disconnect } = useDisconnect()
+  const { disconnect } = useDisconnect()
+  const {isDisconnected} = useAccount()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    console.log("loging out", isDisconnected);
+    disconnect();
+    if(isDisconnected){
+      router.push("/login")
+    }
+  }
+
+  useEffect(()=>{
+    disconnect();
+  },[isDisconnected])
 
   const isActive = page => currentRoute.endsWith(page);
   const itemClass = page => isActive(page) ? "text-appGreen pl-8 border-4 border-black/0 border-r-appGreen" :  "text-gray-500";
@@ -38,10 +54,14 @@ const Sidebar = () => {
         </ul>
       </div>
       <div className="flex-grow"></div>
+      <Separator className={'bg-gray-500 opacity-40'}/>
       <div className="p-4">
-        <button onClick={()=> console.log("yet to")} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
-          Logout
-        </button>
+        <Button onClick={handleLogout} className="hover:text-appRed text-gray-500 text-base bg-transparent hover:bg-transparent py-2 px-4">
+        <svg width="24" height="24" className='mr-3' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 17L21 12M21 12L16 7M21 12H9M9 3H7.8C6.11984 3 5.27976 3 4.63803 3.32698C4.07354 3.6146 3.6146 4.07354 3.32698 4.63803C3 5.27976 3 6.11984 3 7.8V16.2C3 17.8802 3 18.7202 3.32698 19.362C3.6146 19.9265 4.07354 20.3854 4.63803 20.673C5.27976 21 6.11984 21 7.8 21H9" stroke="#FC5555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>  
+          Log out
+        </Button>
       </div>
     </div>
   );
