@@ -1,7 +1,7 @@
 import React from 'react';
 import CampaignDetailsForm from '@/components/campaignDetailsForm';
 import KPIForm from '@/components/kpiForm';
-import RewardForm from '@/components/RewardForm';
+import RewardForm from '@/components/rewardForm';
 
 const SwitchForms = ({ step, formData, onInputChange, onNext, onSubmit }) => {
   switch (step) {
