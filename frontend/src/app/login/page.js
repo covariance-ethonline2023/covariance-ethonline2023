@@ -53,16 +53,16 @@ const Login = () => {
               control={control}
               render={({ field }) => <Input  {...field} />}
               />
-            <Button className="mt-4" onSubmit>
+            <Button className="mt-4" onSubmit={onSubmit}>
             LOG IN
             </Button>
           </form>
         </div>
 
-        <div class="flex flex-col items-center">
-          <div class="border-r border-gray-400 h-20"></div>
-          <span class="my-4 text-gray-400">OR</span>
-          <div class="border-r grow border-gray-400 h-20"></div>
+        <div className="flex flex-col items-center">
+          <div className="border-r border-gray-400 h-20"></div>
+          <span className="my-4 text-gray-400">OR</span>
+          <div className="border-r grow border-gray-400 h-20"></div>
         </div>
 
         <div className=" p-5">
