@@ -1,11 +1,8 @@
 "use client"
-
 import { ContributorForm } from "@/components/contributorForm";
-import { Button } from "@/components/ui/button";
 import { CampaignCard } from "@/components/ui/campaignCard";
 import { useEffect, useState } from "react";
-import Image from "next/image"
-import CampaignDetails from "@/components/campaignDetails";
+import { CampaignDetails } from "@/components/ui/campaignDetails";
 
 
 const Campaigns = () => {
@@ -59,7 +56,7 @@ const Campaigns = () => {
                         showCampaigns ?
                             <CampaignCard buttonLabel={"CONTRIBUTE"}
                                 campaignData={fakecampaignData}
-                                actionBtn={handleContribute}
+                                actionBtn={handleselectedCard}
                                 onCardClick={handleselectedCard}
                             />
                         :
