@@ -21,7 +21,7 @@ const Sidebar = () => {
     console.log("loging out", isDisconnected);
     disconnect();
     if(isDisconnected){
-      router.push("/login")
+      router.push("/launch")
     }
   }
 
