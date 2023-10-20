@@ -6,17 +6,25 @@ import { goerli } from 'wagmi/chains'
 import { publicProvider } from 'wagmi/providers/public'
 
 
-const {chains, publicClient } = configureChains(
+const {chains, provider, publicClient } = configureChains(
     [goerli], 
-    [alchemyProvider({  apiKey: process.env.NEXT_APP_ALCHEMY_API_KEY || ''  }), publicProvider() ],
+    [alchemyProvider({  apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || ''  }), 
+    publicProvider() ],
  )
 
 export const config = createConfig({
-  autoConnect: true,
+  autoConnect: false,
+  provider,
   connectors:
   [
       // new MetaMaskConnector({ chains }),
-      new InjectedConnector({ chains }),
+      new InjectedConnector({
+        chains,
+        options: {
+          name: 'Injected',
+          shimDisconnect: true,
+        },
+      }),
     ],
     publicClient,
 });
