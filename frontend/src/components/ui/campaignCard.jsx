@@ -1,9 +1,13 @@
 import { Card  } from "@/components/ui/card"
-import CircularProgress from "./circularProgress"
 import { Button } from "./button"
 import Image from "next/image"
 
-  export function CampaignCard({campaignData, actionBtn, type, onCardClick}) {
+  export function CampaignCard({
+      buttonLabel,
+      campaignData,
+      actionBtn,
+      onCardClick = () => {}
+  }) {
 
 
     const handleCardClick = () => {
@@ -11,18 +15,18 @@ import Image from "next/image"
       };
 
     const handleActionBtn = () => {
-    actionBtn(campaignData);
+        actionBtn(campaignData);
     };
 
     return (
       <Card className={`
-          max-w-[825px] grid grid-cols-12 gap-4 p-2 text-white
+          min-w-[760px] max-w-[825px] grid grid-cols-12 gap-4 py-2 px-4 text-white
           rounded-2xl bg-transparent border-2
           border-appSecondary
       `} onClick={handleCardClick}>
         <div className="col-span-5 flex flex-row justify-start items-center">
-            <Image src={campaignData?.imgSrc} className={`
-                mx-1 ml-4 mr-4 rounded-full bg-appGlass
+            <Image alt="logo" src={campaignData?.imgSrc} className={`
+                mx-1 mr-4 rounded-full bg-appGlass
                 border-2 border-appSecondary
             `} width={36} height={36} />
             <div className="flex flex-col">
@@ -41,12 +45,12 @@ import Image from "next/image"
             <h3 className="text-appGreen font-bold">{campaignData?.amount}</h3>
             <p className="text-xs">Reward pool</p>
         </div>
-        <div className="col-span-3 flex items-center justify-center">
+        <div className="col-span-3 flex items-center justify-end">
             <Button onClick={handleActionBtn} className={`
                 rounded-[2rem] p-1 pl-6 pr-6 bg-appGreenDark hover:bg-appGreenDark
                 whitespace-nowrap text-xs h-auto
             `}>
-                {type === "contribute" ? "CONTRIBUTE" : "CLAIM REWARDS"}
+                {buttonLabel}
             </Button>
         </div>
       </Card>

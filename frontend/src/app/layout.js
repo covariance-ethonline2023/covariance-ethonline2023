@@ -12,6 +12,6 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
       <html lang="en">
-      <body className={`${workSans.className} bg-cover bg-appBlack bg-[url('/images/bg.svg')]`}><Providers><UserTypeProvider>{children}</UserTypeProvider></Providers></body>
+      <body className={`${workSans.className} text-white bg-cover bg-appBlack bg-[url('/images/bg.svg')]`}><Providers><UserTypeProvider>{children}</UserTypeProvider></Providers></body>
       </html>
 )}

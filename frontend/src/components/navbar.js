@@ -10,7 +10,7 @@ export const NavBar = ({navItems, button}) => {
   return (
       <nav className="bg-appGlass text-white p-4 pl-8 flex items-center justify-between h-[72px]">
         <div className="flex items-center">
-          <Image src="../images/logo.svg" width={145} height={24}/>
+          <Image alt="covariance" src="../images/logo.svg" width={145} height={24} priority />
           <div className="flex-1 flex justify-center">
             <ul className="flex space-x-4">
                 {navItems && navItems.map((link, index) => (
