@@ -108,9 +108,9 @@ export function Contributions ({ campaignId }) {
                     rounded-2xl bg-transparent border-2
                     border-appSecondary
                 `}>
-                    <Image alt="logo" className="flex-none" src={`https://effigy.im/a/${contrib.contributor}.png`} className={`
+                    <Image alt="logo" src={`https://effigy.im/a/${contrib.contributor}.png`} className={`
                         mx-1 mr-4 rounded-full bg-appGlass
-                        border-2 border-appSecondary
+                        border-2 border-appSecondary flex-none
                         `} width={36} height={36} />
                     <h3 className="flex-1 font-medium grow">{contrib.contributor}</h3>
                     <Button onClick={() => {}} className={`
