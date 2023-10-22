@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 import {useDisconnect, useAccount } from 'wagmi'
-import { useUserTypeContext } from '@/app/context/userTypeContext';
+import { useUserTypeContext } from '@/pages/_context/userTypeContext';
 
 
 

@@ -1,9 +1,14 @@
 "use client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CampaignCard } from "@/components/ui/campaignCard";
+import { useAccount } from "wagmi";
 
 
 const MyCampaigns = () => {
+
+    const { address, isConnected } = useAccount()
+    console.log("address", address);
+    console.log("isConnected", isConnected);
 
     const handleClaimReward = () => { }
 

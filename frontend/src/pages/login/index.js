@@ -10,18 +10,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Spinner from '@/components/ui/spinner'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 
 
 const Login = () => {
   
   const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
-  const {isConnected} = useAccount()
+  const {isConnecting, isConnected, connector: activeConnector} = useAccount()
+  const {push} = useRouter()
 
   useEffect(() => {
     if(isConnected){
-      redirect("/dashboard/my-campaigns")
+      push("/dashboard/create-campaign")
     }
   }, [isConnected])
 
@@ -35,7 +36,7 @@ const Login = () => {
   const onSubmit = (data) => console.log(data);
 
   return (
-    <Card className="w-[1152px] h-[578px] flex flex-col justify-evenly">
+    <Card className="w-[1152px] h-[578px] flex flex-col justify-evenly" suppressHydrationWarning={true}>
       <CardContent className="grid grid-flow-col justify-stretch">
         <div className="p-5">
           <h1 className="pb-6">Sign up with email</h1>
@@ -74,9 +75,9 @@ const Login = () => {
             </AlertDescription>
           </Alert>
 
-          {connectors.map((connector) => (
+          {/* {connectors.map((connector) => (
         <Button
-          disabled={!connector.ready}
+          // disabled={!connector.ready}
           key={connector.id}
           onClick={() => connect({ connector })}
         >
@@ -84,7 +85,16 @@ const Login = () => {
             pendingConnector?.id === connector.id) ?
              <><Spinner/> Connecting</> : "Connect"}
         </Button>
-      ))}
+      ))} */}
+      {connectors
+          .filter((x) => x.ready && x.id !== activeConnector?.id)
+          .map((x) => (
+            <button key={x.id} onClick={() => connect({ connector: x })}>
+              {x.name}
+              {isConnecting && x.id === pendingConnector?.id && ' (connecting)'}
+            </button>
+          ))}
+
           {error && <p className="text-red-800 pt-3">Error occured while connecting to wallet. Try Again!</p>}
         </div>
       </CardContent>

@@ -8,7 +8,7 @@ import {
   } from "@/components/ui/card"
   import { Button } from "@/components/ui/button"
   import Image from "next/image"
-  import { useUserTypeContext } from "../context/userTypeContext"
+  import { useUserTypeContext } from "../_context/userTypeContext"
   import { useRouter } from 'next/navigation'
 
 
