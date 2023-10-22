@@ -102,7 +102,7 @@ export function Contributions ({ campaignId }) {
     return (
         <div className="flex flex-col gap-y-2 items-stretch content-stretch">
             <h2 className="text-lg mt-2">Contributors</h2>
-            {(data.length ? data : mockdata).map(contrib =>
+            {(data?.length ? data : mockdata).map(contrib =>
                 <Card key={contrib.contributionId} className={`
                     min-w-[760px] max-w-[825px] flex items-center py-2 px-4 text-white
                     rounded-2xl bg-transparent border-2
