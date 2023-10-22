@@ -7,6 +7,17 @@ Traditional SaaS companies build their B2B or B2C GTM based of their own in hous
 
 In the age of community-first growth - Covariance is helping companies achieve their goals by empowering a network of highly vetted and skilled web3 contributors to assist and get rewarded for the value created.
 
+## Documenting the Process
+We each worked on separate parts of this project: product spec, designs, UI & smart contracts.
+Here are some links that show our process and original goals:
+
+- [Hackathon presentation](https://docs.google.com/presentation/d/11zSa06_eEz2Bevu6-YNWmRiRgMB3SBeLBIPxyN-vA3M/edit?usp=sharing) — high-level overview of Covariance ETHOnline hackathon project
+- [Figma prototype link](https://www.figma.com/proto/GPbUGb7BOuYrvOVnmPcw8M/Covariance?type=design&node-id=971-2923&t=tp4LOrKeaGo8VOIr-0&scaling=min-zoom&page-id=19%3A83&starting-point-node-id=971%3A2923) — figma prototype showing complete flow
+- [Smart contracts overview](https://www.notion.so/Covariance-Contracts-ad6d9136272c417bbf6e36263e1fa814?pvs=4) — high level overview of the Covariance contracts and how to use them (they're permissionless)
+- [`CovarianceHub` on Etherscan](https://goerli.etherscan.io/address/0x650f12C2E55a156EDc5730A33059958aE35266b6#code) — a verfied contract on Etherscan with full functionality
+- [`CovarianceSafePlugin` on Etherscan](https://goerli.etherscan.io/address/0x3895DDff1DAecC924c33645dd727f830D426b2E6#code) — a verfied contract on Etherscan with full functionality
+- [Project draft spec](https://docs.google.com/document/d/1h7WGqZV5uGK5V5Qzj79U0VY5xi_jkTj639BAdX78Id0/edit) — initial spec for hackathon idea
+
 ## 📝 Protocol Overview
 
 <a href="./blob/main/user-flow.jpg">
