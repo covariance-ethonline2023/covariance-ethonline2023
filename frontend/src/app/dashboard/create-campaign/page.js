@@ -3,31 +3,68 @@
 import React, { useState } from "react";
 import { useStepper } from "headless-stepper";
 import SwitchForms from "@/app/dashboard/create-campaign/_SwitchForm";
+import CovarianceHubABI from "../../../abi/CovarianceHubABI";
+
+import { useContractWrite, useAccount } from 'wagmi';
+
+
 
 const Stepper = () => {
-
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        links: '',
+  const [formData, setFormData] = useState({
+    rewardAmount: '',
+    rewardToken: '',
+    initiator: '',
+    title: '',
+    ipfsCid: '',
+    challenges: [
+      {
         kpi: '',
-        reward: '',
+        points: '',
+        maxContributions: '',
+        contributionsSpent: '0',
+      },
+    ],
+    maxPoints: '',
       })
 
-      const handleInputChange = (event) => {
-        const { name, value } = event.target
-        console.log("form data  =>>", "name:",name  , "value:",value)
-        setFormData((prevData) => ({
-          ...prevData,
-          [name]: value,
-        }))
-      }
+  const { address, isConnected } = useAccount()
+  console.log("address", address);
+  console.log("isConnected", isConnected);
 
-      const handleSubmit = () => {
-        // submission logic here using formData
-        console.log('Form submitted:', formData);
-        // Reset the form and navigate to my campaigns page
-      }
+  const { data: writeFormData, isLoading: isSubmitting, write: create, error: createError } = useContractWrite(
+    {
+    address: process.env.COVARIANCEHUB_CONTRACT_ADDRESS,
+    abi: CovarianceHubABI,
+    functionName: "createCampaign",
+  });
+
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const [key, field] = name.split('.');
+  
+    if (key === 'challenges') {
+      setFormData((prevData) => ({
+        ...prevData,
+        challenges: [{ ...prevData.challenges[0], [field]: value }],
+      }));
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [key]: value,
+      }));
+    }
+  };
+
+
+
+  const handleSubmit =  () => {
+    console.log('Form submitted:', formData);
+    create({args: ["0xf036f3f9e58cB13D85022E7926D14Acdc63f763E", formData]})
+  }
+
+
+
 
 
 
@@ -39,7 +76,7 @@ const Stepper = () => {
     ],
     []
   )
-  useStepper
+useStepper
 
   const { state, nextStep, stepperProps, stepsProps, progressProps } = useStepper({
     steps
@@ -97,9 +134,17 @@ const Stepper = () => {
         </div>
       </nav>
 
-
       <div>
         <SwitchForms step={state.currentStep} formData={formData} onInputChange={handleInputChange} onNext={nextStep} onSubmit={handleSubmit} />
+
+        {isSubmitting && <h1>Please confirm the transaction on your wallet</h1>}
+        {writeFormData && <h1>The transaction was sent! Here is the hash: {writeFormData.hash}</h1>}
+        {createError && (
+        <p>
+          Calling that contract function will fail for this reason:
+          {createError.reason ?? createError.message}
+        </p>)}
+
       </div>
 
     </>
